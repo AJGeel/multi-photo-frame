@@ -6,6 +6,7 @@ import { Canvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
 import { Frame } from "./frame";
 import { frameRatio } from "./frames";
+import { rollDice } from "./dice";
 import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
 import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
@@ -189,6 +190,15 @@ function App() {
   function resetSettings() {
     resetConfig();
     dispatch({ type: "setGrid", grid: DEFAULT_GRID });
+    setNotice(null);
+    setHalo(null);
+  }
+
+  function roll() {
+    const { config: rolled, frame: rolledFrame } = rollDice(stateRef.current.photos.length);
+    setRawConfig((current) => ({ ...current, ...rolled }));
+    dispatch({ type: "setGrid", grid: { rows: rolled.rows, columns: rolled.columns } });
+    setFrame(rolledFrame);
     setNotice(null);
     setHalo(null);
   }
@@ -572,7 +582,7 @@ function App() {
         {(!narrow || drawerOpen) && (
           <>
             <div className={narrow ? "sidebar-wrap drawer" : "sidebar-wrap"}>
-              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} frame={frame} onFrame={setFrame} />
+              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} onRoll={roll} frame={frame} onFrame={setFrame} />
             </div>
             {narrow && <div className="scrim" aria-hidden="true" onClick={() => setDrawerOpen(false)} />}
           </>

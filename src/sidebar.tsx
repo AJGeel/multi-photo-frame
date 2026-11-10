@@ -4,7 +4,7 @@ import { computeCells, type GridConfig } from "./grid";
 import { EXPORT_DPI, exportSize, isOversize, MAX_CANVAS_SIDE } from "./export";
 import { FramePicker } from "./frame";
 import { frameLabel, type FrameStyle } from "./frames";
-import { Info, Reset, Rotate, Warning } from "./icons";
+import { Dice, Info, Reset, Rotate, Warning } from "./icons";
 import { isLandscape } from "./presets";
 import { SizePicker } from "./size-picker";
 import { Button, IconButton, Keys, Labeled, NumberField, SidebarSection } from "./ui";
@@ -25,6 +25,7 @@ interface SidebarProps {
   onPickPreset: (id: string) => void;
   onRotate: () => void;
   onReset: () => void;
+  onRoll: () => void;
   frame: FrameStyle;
   onFrame: (frame: FrameStyle) => void;
 }
@@ -50,7 +51,7 @@ function Notice({ notice, keys }: { notice: ClampNotice | null; keys: ConfigKey[
   );
 }
 
-export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, frame, onFrame }: SidebarProps) {
+export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, onRoll, frame, onFrame }: SidebarProps) {
   const cell = computeCells(config)[0];
   const pixels = exportSize(config);
   const wide = pixels.width >= pixels.height;
@@ -135,12 +136,17 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
           <FramePicker value={frame} onChange={onFrame} />
         </SidebarSection>
 
-        <div className="reset-row">
-          <Button variant="ghost" className="reset-btn" onClick={onReset}>
-            <Reset size={14} />
-            Reset settings
-          </Button>
-        </div>
+      </div>
+
+      <div className="sidebar-actions">
+        <Button variant="ghost" onClick={onReset}>
+          <Reset size={14} />
+          Reset settings
+        </Button>
+        <Button variant="ghost" onClick={onRoll}>
+          <Dice size={14} />
+          Roll the dice
+        </Button>
       </div>
 
       <div className="shortcuts">

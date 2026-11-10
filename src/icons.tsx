@@ -78,6 +78,12 @@ export const Reset = icon(
     <path d="M3 9.5A5 5 0 1 0 4.2 4.6L2.5 6.5" />
   </>,
 );
+export const Dice = icon(
+  <>
+    <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
+    <path d="M5.6 5.6v.01M10.4 5.6v.01M8 8v.01M5.6 10.4v.01M10.4 10.4v.01" strokeWidth="1.9" />
+  </>,
+);
 export const Settings = icon(
   <>
     <path d="M2.5 5h7M12.5 5h1M2.5 11h1M6.5 11h7" />

@@ -469,12 +469,18 @@ input {
   margin-top: 1.5px;
   color: var(--accent-text);
 }
-.reset-row {
-  padding-top: var(--s-4);
+.sidebar-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: 10px var(--s-5);
+  border-top: 1px solid var(--border);
 }
-.reset-btn {
+.sidebar-actions .btn {
   padding: 0 var(--s-4);
-  margin-left: -8px;
+  min-width: 0;
 }
 
 .shortcuts {
