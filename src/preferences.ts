@@ -8,8 +8,8 @@ import type { GridConfig } from "./grid";
 export const DEFAULT_CONFIG: GridConfig = {
   rows: 3,
   columns: 4,
-  spacingX: 10,
-  spacingY: 10,
+  spacingX: 4,
+  spacingY: 4,
   padding: 20,
   width: 420,
   height: 297,

@@ -12,7 +12,7 @@ export const FRAME_STYLES: { id: FrameStyle; label: string }[] = [
   { id: "gold", label: "Gold" },
 ];
 
-export const DEFAULT_FRAME: FrameStyle = "none";
+export const DEFAULT_FRAME: FrameStyle = "black";
 
 /** Moulding width as a fraction of the paper's shorter side. */
 const WIDTH_RATIO: Record<FrameStyle, number> = {

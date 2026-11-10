@@ -34,7 +34,7 @@ interface SidebarProps {
 const SHORTCUTS: { label: string; keys: string[] }[] = [
   { label: "Select all", keys: ["mod", "A"] },
   { label: "Add to range", keys: ["shift", "Click"] },
-  { label: "Toggle one", keys: ["mod", "Click"] },
+  { label: "Select multiple", keys: ["mod", "Click"] },
   { label: "Clear selection", keys: ["Esc"] },
   { label: "Remove", keys: ["backspace"] },
   { label: "Undo", keys: ["mod", "Z"] },

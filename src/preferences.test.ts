@@ -90,9 +90,9 @@ describe("parseExportOptions", () => {
 });
 
 describe("parseFrame", () => {
-  it("accepts known styles and falls back to none", () => {
+  it("accepts known styles and falls back to black", () => {
     expect(parseFrame({ frame: "gold" })).toBe("gold");
-    expect(parseFrame({ frame: "neon" })).toBe("none");
-    expect(parseFrame(null)).toBe("none");
+    expect(parseFrame({ frame: "neon" })).toBe("black");
+    expect(parseFrame(null)).toBe("black");
   });
 });
