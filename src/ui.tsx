@@ -167,8 +167,8 @@ export function SidebarSection({ id, title, meta, children }: { id: string; titl
         {title}
         {meta !== undefined && <span className="sec-meta num">{meta}</span>}
       </button>
-      <div id={bodyId} className="section-body" hidden={collapsed}>
-        {children}
+      <div id={bodyId} className="section-body" data-collapsed={collapsed || undefined} inert={collapsed}>
+        <div className="section-inner">{children}</div>
       </div>
     </section>
   );

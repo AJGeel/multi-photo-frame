@@ -274,6 +274,13 @@ input {
   font-size: 12px;
   box-shadow: var(--tip-shadow);
   z-index: 60;
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.tip[data-starting-style],
+.tip[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.96);
 }
 .tip .kbd {
   background: var(--tip-kbd-bg);
@@ -285,6 +292,16 @@ input {
   border: 1px solid var(--border-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--pop-shadow);
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+.pop[data-starting-style],
+.pop[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+.pop[data-ending-style] {
+  transition-timing-function: var(--ease-in);
 }
 
 /* ---- Fields ---- */
@@ -384,14 +401,25 @@ input {
 .section + .section {
   padding-top: var(--s-5);
 }
+/* Height animates via grid rows (0fr -> 1fr), so the content's natural height is never measured. */
 .section-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--dur-collapse) var(--ease-out), opacity var(--dur-collapse) var(--ease-out);
+}
+.section-body[data-collapsed] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.section-inner {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 10px;
-}
-.section-body[hidden] {
-  display: none;
+  /* Top padding is the old margin (so it collapses too); side/bottom padding keeps focus halos from being clipped. */
+  padding: 10px 3px 3px;
+  margin: 0 -3px -3px;
 }
 .sec {
   all: unset;
@@ -505,6 +533,11 @@ input {
   inset: 0;
   z-index: 60;
   background: rgba(0, 0, 0, 0.45);
+  transition: opacity var(--dur-dialog) var(--ease-out);
+}
+.dialog-backdrop[data-starting-style],
+.dialog-backdrop[data-ending-style] {
+  opacity: 0;
 }
 .dialog-popup {
   position: fixed;
@@ -520,6 +553,15 @@ input {
   background: var(--bg-elev-2);
   border-radius: 12px;
   box-shadow: var(--pop-shadow);
+  transition: opacity var(--dur-dialog) var(--ease-out), transform var(--dur-dialog) var(--ease-out);
+}
+.dialog-popup[data-starting-style],
+.dialog-popup[data-ending-style] {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+.dialog-popup[data-ending-style] {
+  transition-timing-function: var(--ease-in);
 }
 .dialog-title {
   margin: 0;

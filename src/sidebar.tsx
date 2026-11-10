@@ -126,12 +126,12 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
           </div>
         </SidebarSection>
 
-        <SidebarSection id="paper" title="Paper" meta={paperLabel(paperColor)}>
-          <PaperPicker />
-        </SidebarSection>
-
         <SidebarSection id="frame" title="Frame" meta={frameLabel(frame)}>
           <FramePicker value={frame} onChange={onFrame} />
+        </SidebarSection>
+
+        <SidebarSection id="paper" title="Paper" meta={paperLabel(paperColor)}>
+          <PaperPicker />
         </SidebarSection>
 
       </div>
