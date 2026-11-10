@@ -19,13 +19,13 @@ function ToastList() {
     const kind = toast.type ?? "info";
     const data = toast.data ?? {};
     return (
-      <Toast.Root key={toast.id} toast={toast} className="toast" role={kind === "error" ? "alert" : "status"}>
+      <Toast.Root key={toast.id} toast={toast} className="toast" data-kind={kind} role={kind === "error" ? "alert" : "status"}>
         <Toast.Content className="toast-content">
           <span className={`toast-icon ${kind}`}>
-            {kind === "progress" && <Spinner size={16} />}
-            {kind === "success" && <Check size={9} stroke={2.6} />}
-            {kind === "error" && <AlertCircle size={16} />}
-          </span>
+            {kind === "progress" && <Spinner size={14} />}
+            {kind === "success" && <Check size={14} stroke={2} />}
+            {kind === "error" && <AlertCircle size={14} />}
+                      </span>
           <div className="toast-body">
             <Toast.Title className="toast-title" />
             <Toast.Description className="toast-desc" />

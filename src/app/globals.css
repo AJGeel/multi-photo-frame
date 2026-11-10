@@ -1293,38 +1293,49 @@ input {
   z-index: 80;
 }
 .toast {
+  position: relative;
   background: var(--bg-elev-2);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-lg);
+  border-radius: 8px;
   box-shadow: var(--pop-shadow);
-  padding: var(--s-5);
-  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+  padding: 8px 8px 8px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  transition: opacity var(--dur-dialog) var(--ease-out), transform var(--dur-dialog) var(--ease-out);
 }
 .toast[data-starting-style],
 .toast[data-ending-style] {
   opacity: 0;
   transform: translateY(8px);
 }
+.toast[data-ending-style] {
+  transition-timing-function: var(--ease-in);
+}
 .toast-content {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  align-items: flex-start;
 }
+/* Just a glyph, coloured by kind. Plain notices have none. */
 .toast-icon {
   flex: none;
-  width: 16px;
+  width: 14px;
   height: 16px;
-  margin-top: 1px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-3);
+}
+.toast-icon > svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
 }
 .toast-icon.progress {
-  color: var(--accent-text);
+  color: var(--text-2);
 }
 .toast-icon.success {
-  border-radius: 50%;
-  background: var(--success);
-  color: #fff;
+  color: var(--success);
 }
 .toast-icon.error {
   color: var(--danger);
@@ -1337,28 +1348,50 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
+  gap: 2px;
+  padding: 0 2px;
 }
 .toast-title {
-  font-weight: 600;
   margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--text);
 }
 .toast-desc {
   margin: 0;
-  font-size: 12px;
-  color: var(--text-2);
-  line-height: 1.5;
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 15px;
   white-space: pre-line;
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
+/* Trailing buttons are smaller than the text row is tall, so they never stretch the toast. */
+.toast .ib.sm {
+  width: 20px;
+  height: 20px;
+  margin: -2px 0;
+}
+.toast .btn.compact {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11.5px;
+  margin: -2px 0;
+}
 .toast-actions {
   display: flex;
-  gap: var(--s-3);
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+  margin-left: -6px;
+}
+.toast-actions .btn.compact {
+  margin: 0;
 }
 .progress {
-  height: 4px;
-  border-radius: 2px;
+  height: 2px;
+  margin-top: var(--s-3);
+  border-radius: 1px;
   background: var(--border);
   overflow: hidden;
 }
