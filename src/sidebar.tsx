@@ -2,6 +2,8 @@
 
 import { computeCells, type GridConfig } from "./grid";
 import { EXPORT_DPI, exportSize, isOversize, MAX_CANVAS_SIDE } from "./export";
+import { FramePicker } from "./frame";
+import { frameLabel, type FrameStyle } from "./frames";
 import { Info, Reset, Rotate, Warning } from "./icons";
 import { isLandscape } from "./presets";
 import { SizePicker } from "./size-picker";
@@ -23,6 +25,8 @@ interface SidebarProps {
   onPickPreset: (id: string) => void;
   onRotate: () => void;
   onReset: () => void;
+  frame: FrameStyle;
+  onFrame: (frame: FrameStyle) => void;
 }
 
 
@@ -46,7 +50,7 @@ function Notice({ notice, keys }: { notice: ClampNotice | null; keys: ConfigKey[
   );
 }
 
-export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset }: SidebarProps) {
+export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, frame, onFrame }: SidebarProps) {
   const cell = computeCells(config)[0];
   const pixels = exportSize(config);
   const wide = pixels.width >= pixels.height;
@@ -125,6 +129,10 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
               <Notice notice={notice} keys={["spacingX", "spacingY", "padding"]} />
             </div>
           </div>
+        </SidebarSection>
+
+        <SidebarSection id="frame" title="Frame" meta={frameLabel(frame)}>
+          <FramePicker value={frame} onChange={onFrame} />
         </SidebarSection>
 
         <div className="reset-row">

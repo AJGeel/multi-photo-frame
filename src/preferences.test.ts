@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, migrateLegacyPreferences, parseCollapsed, parseExportOptions, parseStoredConfig, usePreferences } from "./preferences";
+import { DEFAULT_CONFIG, migrateLegacyPreferences, parseCollapsed, parseExportOptions, parseFrame, parseStoredConfig, usePreferences } from "./preferences";
 
 const KEY = "multi-photo-frame:preferences";
 
@@ -86,5 +86,13 @@ describe("parseExportOptions", () => {
   it("keeps valid values and clamps quality", () => {
     expect(parseExportOptions({ exportOptions: { format: "pdf", quality: 20 } })).toEqual({ format: "pdf", quality: 50 });
     expect(parseExportOptions({ exportOptions: { format: "gif", quality: "high" } })).toEqual({ format: "jpeg", quality: 95 });
+  });
+});
+
+describe("parseFrame", () => {
+  it("accepts known styles and falls back to none", () => {
+    expect(parseFrame({ frame: "gold" })).toBe("gold");
+    expect(parseFrame({ frame: "neon" })).toBe("none");
+    expect(parseFrame(null)).toBe("none");
   });
 });

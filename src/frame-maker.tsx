@@ -4,6 +4,8 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { Canvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
+import { Frame } from "./frame";
+import { frameRatio } from "./frames";
 import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
 import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
@@ -67,6 +69,8 @@ function App() {
   const resetConfig = usePreferences((s) => s.resetConfig);
   const exportOptions = usePreferences((s) => s.exportOptions);
   const setExportOptions = usePreferences((s) => s.setExportOptions);
+  const frame = usePreferences((s) => s.frame);
+  const setFrame = usePreferences((s) => s.setFrame);
   const narrow = useMediaQuery(NARROW_QUERY);
 
   const [ready, setReady] = useState(false);
@@ -140,9 +144,19 @@ function App() {
     return () => observer.disconnect();
   }, []);
   const overflowExtra = overflow > 0 ? 72 + (noticeVisible ? 56 : 0) : 0;
+  // The frame adds a moulding on every side, in proportion to the paper, so fit paper plus frame.
+  const shortSide = Math.min(config.width, config.height);
+  const frameMm = frameRatio(frame) * shortSide;
   const scale = workspace
-    ? Math.max(Math.min((workspace.width - (narrow ? 48 : 128)) / config.width, (workspace.height - (narrow ? 140 : 132) - overflowExtra) / config.height), 0.05)
+    ? Math.max(
+        Math.min(
+          (workspace.width - (narrow ? 48 : 128)) / (config.width + 2 * frameMm),
+          (workspace.height - (narrow ? 140 : 132) - overflowExtra) / (config.height + 2 * frameMm),
+        ),
+        0.05,
+      )
     : 0.5;
+  const framePx = Math.round(frameMm * scale);
 
   // ---- Settings -------------------------------------------------------------------------------
 
@@ -558,7 +572,7 @@ function App() {
         {(!narrow || drawerOpen) && (
           <>
             <div className={narrow ? "sidebar-wrap drawer" : "sidebar-wrap"}>
-              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} />
+              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} frame={frame} onFrame={setFrame} />
             </div>
             {narrow && <div className="scrim" aria-hidden="true" onClick={() => setDrawerOpen(false)} />}
           </>
@@ -589,24 +603,26 @@ function App() {
           )}
 
           <div ref={canvasWrapRef} className="canvas-wrap" style={{ visibility: workspace ? "visible" : "hidden" }}>
-            <Canvas
-              config={config}
-              scale={scale}
-              photos={state.photos}
-              selected={selected}
-              drag={drag}
-              fileDrop={fileDrop}
-              lowRes={lowRes}
-              tabIndexCell={tabCell}
-              cropId={cropId}
-              cropFocus={cropFocus}
-              onPointerDown={onCellPointerDown}
-              onCellClick={onCellClick}
-              onDoubleClick={(photo) => setCropId((id) => (id === photo.id ? null : photo.id))}
-              onKeyDown={onCellKeyDown}
-              onFocusCell={setFocusCell}
-              onAddPhotos={openPicker}
-            />
+            <Frame style={frame} width={framePx}>
+              <Canvas
+                config={config}
+                scale={scale}
+                photos={state.photos}
+                selected={selected}
+                drag={drag}
+                fileDrop={fileDrop}
+                lowRes={lowRes}
+                tabIndexCell={tabCell}
+                cropId={cropId}
+                cropFocus={cropFocus}
+                onPointerDown={onCellPointerDown}
+                onCellClick={onCellClick}
+                onDoubleClick={(photo) => setCropId((id) => (id === photo.id ? null : photo.id))}
+                onKeyDown={onCellKeyDown}
+                onFocusCell={setFocusCell}
+                onAddPhotos={openPicker}
+              />
+            </Frame>
           </div>
 
           {overflow > 0 && (

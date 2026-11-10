@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_EXPORT_OPTIONS, type ExportOptions } from "./export";
+import { DEFAULT_FRAME, isFrameStyle, type FrameStyle } from "./frames";
 import type { GridConfig } from "./grid";
 
 /** Millimetres. A3 landscape. */
@@ -19,6 +20,8 @@ interface PreferencesState {
   config: GridConfig;
   /** Sidebar sections the user collapsed, by id. */
   collapsed: Record<string, boolean>;
+  frame: FrameStyle;
+  setFrame: (frame: FrameStyle) => void;
   exportOptions: ExportOptions;
   setExportOptions: (options: ExportOptions) => void;
   setCollapsed: (id: string, collapsed: boolean) => void;
@@ -56,6 +59,11 @@ export function parseCollapsed(value: unknown): Record<string, boolean> {
   return Object.fromEntries(Object.entries(stored).filter(([, v]) => typeof v === "boolean")) as Record<string, boolean>;
 }
 
+export function parseFrame(value: unknown): FrameStyle {
+  const stored = (value as { frame?: unknown } | null)?.frame;
+  return isFrameStyle(stored) ? stored : DEFAULT_FRAME;
+}
+
 export function parseExportOptions(value: unknown): ExportOptions {
   const stored = (value as { exportOptions?: Partial<ExportOptions> } | null)?.exportOptions;
   const format = stored?.format === "png" || stored?.format === "pdf" || stored?.format === "jpeg" ? stored.format : DEFAULT_EXPORT_OPTIONS.format;
@@ -69,6 +77,8 @@ export const usePreferences = create<PreferencesState>()(
       config: DEFAULT_CONFIG,
       collapsed: {},
       exportOptions: DEFAULT_EXPORT_OPTIONS,
+      frame: DEFAULT_FRAME,
+      setFrame: (frame) => set({ frame }),
       setExportOptions: (exportOptions) => set({ exportOptions }),
       setCollapsed: (id, collapsed) => set((state) => ({ collapsed: { ...state.collapsed, [id]: collapsed } })),
       updateConfig: (update) => set((state) => ({ config: update(state.config) })),
@@ -79,8 +89,8 @@ export const usePreferences = create<PreferencesState>()(
       version: 1,
       // Hydrate after mount (see `FrameMaker`), so the first client render matches the static HTML.
       skipHydration: true,
-      partialize: (state) => ({ config: state.config, collapsed: state.collapsed, exportOptions: state.exportOptions }),
-      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted), collapsed: parseCollapsed(persisted), exportOptions: parseExportOptions(persisted) }),
+      partialize: (state) => ({ config: state.config, collapsed: state.collapsed, exportOptions: state.exportOptions, frame: state.frame }),
+      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted), collapsed: parseCollapsed(persisted), exportOptions: parseExportOptions(persisted), frame: parseFrame(persisted) }),
     },
   ),
 );

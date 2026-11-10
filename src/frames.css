@@ -1,0 +1,268 @@
+/* Frame styles for the preview. These are material colours, the same in light and dark themes.
+   Light comes from the top left: the top edge is brightest, the bottom edge darkest. */
+
+.framed {
+  position: relative;
+  padding: var(--f);
+  --dir-top: to bottom;
+  --dir-bottom: to top;
+  --dir-left: to right;
+  --dir-right: to left;
+  box-shadow: 4px 7px 10px rgba(0, 0, 0, 0.22), 10px 18px 36px rgba(0, 0, 0, 0.32);
+}
+.framed > .canvas {
+  box-shadow: none;
+  z-index: 1;
+}
+/* The frame shades the paper along its edge. */
+.framed > .canvas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: inset 2px 3px 7px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.frame-side {
+  position: absolute;
+  pointer-events: none;
+  background-image: var(--shade), var(--grain, none), var(--profile);
+  background-size: auto, 400px 400px, auto;
+}
+.frame-side.top {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--f);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--f)) 100%, var(--f) 100%);
+  --dir: var(--dir-top);
+  --shade: linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16));
+  --grain: var(--grain-h);
+}
+.frame-side.bottom {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--f);
+  clip-path: polygon(var(--f) 0, calc(100% - var(--f)) 0, 100% 100%, 0 100%);
+  --dir: var(--dir-bottom);
+  --shade: linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.34));
+  --grain: var(--grain-h);
+}
+.frame-side.left {
+  left: 0;
+  top: 0;
+  width: var(--f);
+  height: 100%;
+  clip-path: polygon(0 0, 100% var(--f), 100% calc(100% - var(--f)), 0 100%);
+  --dir: var(--dir-left);
+  --shade: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06));
+  --grain: var(--grain-v);
+}
+.frame-side.right {
+  right: 0;
+  top: 0;
+  width: var(--f);
+  height: 100%;
+  clip-path: polygon(0 var(--f), 100% 0, 100% 100%, 0 calc(100% - var(--f)));
+  --dir: var(--dir-right);
+  --shade: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
+  --grain: var(--grain-v);
+}
+
+/* A moulding profile: dark outer edge, bright bevel, body, dark inner lip. */
+.frame-side,
+.frame-swatch {
+  --profile: linear-gradient(var(--dir), var(--p1) 0, var(--p2) 12%, var(--p3) 45%, var(--p4) 88%, var(--p5) 100%);
+}
+
+[data-frame="black"] {
+  --p1: #000;
+  --p2: #3a3a3d;
+  --p3: #141415;
+  --p4: #080808;
+  --p5: #2a2a2c;
+}
+[data-frame="white"] {
+  --p1: #d4d4d0;
+  --p2: #fbfbf9;
+  --p3: #f1f1ee;
+  --p4: #e3e3df;
+  --p5: #bdbdb8;
+}
+[data-frame="oak"] {
+  --p1: #8f6a3f;
+  --p2: #d9b684;
+  --p3: #c9a070;
+  --p4: #b58a58;
+  --p5: #7d5a33;
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.26' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.2 0 0 0 0 0.07 1.9 0 0 0 -0.7'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.26 0.006' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.2 0 0 0 0 0.07 1.9 0 0 0 -0.7'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+[data-frame="walnut"] {
+  --p1: #2b1a10;
+  --p2: #6e4a30;
+  --p3: #5a3a25;
+  --p4: #482d1b;
+  --p5: #25150c;
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.3' numOctaves='3' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.04 0 0 0 0 0.02 2.0 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.3 0.006' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.04 0 0 0 0 0.02 2.0 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+[data-frame="cherry"] {
+  --p1: #5d2616;
+  --p2: #b4603f;
+  --p3: #9b4a30;
+  --p4: #823a24;
+  --p5: #4f2012;
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.22' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.28 0 0 0 0 0.09 0 0 0 0 0.04 1.8 0 0 0 -0.65'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.22 0.006' numOctaves='3' seed='6' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.28 0 0 0 0 0.09 0 0 0 0 0.04 1.8 0 0 0 -0.65'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+[data-frame="birch"] {
+  --p1: #b79f73;
+  --p2: #f3e6c8;
+  --p3: #e6d3ae;
+  --p4: #d3bc92;
+  --p5: #a28a5f;
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.18' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.42 0 0 0 0 0.24 1.4 0 0 0 -0.55'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.18 0.006' numOctaves='3' seed='12' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.42 0 0 0 0 0.24 1.4 0 0 0 -0.55'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+
+/* Gold: an antique gilded moulding. Raised outer ridge, a wide carved band with a diamond pattern,
+   a bright inner ridge, worn gold leaf, and a slow glint. */
+[data-frame="gold"] {
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 0 0.02 1.6 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 0 0.02 1.6 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  box-shadow: 4px 8px 12px rgba(0, 0, 0, 0.3), 12px 22px 44px rgba(60, 40, 0, 0.4);
+}
+[data-frame="gold"] .frame-side,
+.frame-swatch[data-frame="gold"] {
+  --profile: linear-gradient(
+    var(--dir),
+    #3b2707 0,
+    #ecd48c 3%,
+    #a67c28 6%,
+    #6a4a10 10%,
+    #c29a38 22%,
+    #e8cf82 34%,
+    #c29a38 46%,
+    #8d6a1e 60%,
+    #cda443 72%,
+    #5b3f0d 80%,
+    #f1de9f 86%,
+    #c39a3c 92%,
+    #4a3209 100%
+  );
+}
+/* The carved band. */
+[data-frame="gold"] .frame-side::before {
+  content: "";
+  position: absolute;
+  background:
+    repeating-linear-gradient(45deg, rgba(40, 24, 0, 0.22) 0 calc(var(--f) * 0.035), transparent calc(var(--f) * 0.035) calc(var(--f) * 0.2)),
+    repeating-linear-gradient(-45deg, rgba(255, 238, 170, 0.28) 0 calc(var(--f) * 0.035), transparent calc(var(--f) * 0.035) calc(var(--f) * 0.2));
+}
+[data-frame="gold"] .frame-side.top::before,
+[data-frame="gold"] .frame-side.bottom::before {
+  left: 0;
+  right: 0;
+  top: 13%;
+  bottom: 22%;
+}
+[data-frame="gold"] .frame-side.left::before,
+[data-frame="gold"] .frame-side.right::before {
+  top: 0;
+  bottom: 0;
+  left: 13%;
+  right: 22%;
+}
+[data-frame="gold"] .frame-side.bottom::before {
+  top: 22%;
+  bottom: 13%;
+}
+[data-frame="gold"] .frame-side.right::before {
+  left: 22%;
+  right: 13%;
+}
+[data-frame="gold"] .frame-side::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%) 0 0 / 300% 100%;
+  animation: glint 8s ease-in-out infinite;
+  mix-blend-mode: soft-light;
+}
+@keyframes glint {
+  0%,
+  45% {
+    background-position: 100% 0;
+  }
+  80%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ---- Picker ---- */
+.frame-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-3);
+}
+.frame-choice {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-2);
+  border-radius: var(--r-md);
+  padding: var(--s-2);
+}
+.frame-choice:hover {
+  background: var(--bg-hover);
+}
+.frame-choice:focus-visible {
+  box-shadow: var(--focus);
+}
+.frame-choice[aria-checked="true"] {
+  color: var(--text);
+  font-weight: 600;
+  background: var(--accent-soft);
+}
+.frame-swatch {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  border-radius: var(--r-xs);
+  overflow: hidden;
+  --dir: to bottom;
+  --shade: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
+  --grain: var(--grain-h);
+  --f: 30px;
+  background-image: var(--shade), var(--grain, none), var(--profile);
+  background-size: auto, 400px 400px, auto;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.frame-swatch[data-frame="none"] {
+  background: repeating-linear-gradient(135deg, transparent 0 6px, var(--border) 6px 7px);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.frame-swatch[data-frame="gold"]::before {
+  content: "";
+  position: absolute;
+  inset: 22% 0 13%;
+  background:
+    repeating-linear-gradient(45deg, rgba(40, 24, 0, 0.3) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(-45deg, rgba(255, 238, 170, 0.34) 0 1px, transparent 1px 5px);
+}
+.frame-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-3);
+  white-space: nowrap;
+}

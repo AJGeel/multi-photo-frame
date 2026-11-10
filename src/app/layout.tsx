@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "../tokens.css";
 import "./globals.css";
+import "../frames.css";
 
 export const metadata: Metadata = {
   title: "Multi Photo Frame",
