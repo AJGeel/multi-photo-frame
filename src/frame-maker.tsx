@@ -7,6 +7,7 @@ import { canvasToBlob, downloadBlob, effectiveDpi, exportFilename, exportSize, i
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
 import { Check, Close, Download, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
+import { loadPhotos } from "./photo-files";
 import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
 import { findPreset, isLandscape, PRESETS, presetSize } from "./presets";
 import { migrateLegacyPreferences, usePreferences } from "./preferences";
@@ -28,20 +29,6 @@ const FIELD_NAMES: Record<ConfigKey, string> = {
 
 const HALO_MS = 1500;
 const clamp01 = (n: number) => Math.min(Math.max(n, 0), 1);
-
-async function loadPhoto(file: File): Promise<Photo | null> {
-  // Object URLs are not revoked on remove, because undo can bring the photo back.
-  const src = URL.createObjectURL(file);
-  try {
-    const image = new Image();
-    image.src = src;
-    await image.decode();
-    return { id: crypto.randomUUID(), src, name: file.name, width: image.naturalWidth, height: image.naturalHeight };
-  } catch {
-    URL.revokeObjectURL(src);
-    return null;
-  }
-}
 
 function clampMessage(key: ConfigKey, wanted: number, got: number): string | null {
   if (wanted === got) return null;
@@ -191,7 +178,7 @@ function App() {
 
   const addFiles = useCallback(async (files: File[], index?: number | null) => {
     const images = files.filter((file) => file.type.startsWith("image/"));
-    const loaded = (await Promise.all(images.map(loadPhoto))).filter((photo): photo is Photo => photo !== null);
+    const loaded = (await loadPhotos(images)).filter((photo): photo is Photo => photo !== null);
     const skipped = files.length - loaded.length;
     if (loaded.length > 0) dispatch({ type: "add", photos: loaded, index: index ?? undefined });
     if (skipped > 0) {
@@ -619,7 +606,7 @@ function App() {
                     }}
                   >
                     {/* oxlint-disable-next-line next/no-img-element */}
-                    <img src={photo.src} alt="" draggable={false} style={{ objectPosition: `${(photo.focus?.x ?? 0.5) * 100}% ${(photo.focus?.y ?? 0.5) * 100}%` }} />
+                    <img src={photo.thumb ?? photo.src} loading="lazy" decoding="async" alt="" draggable={false} style={{ objectPosition: `${(photo.focus?.x ?? 0.5) * 100}% ${(photo.focus?.y ?? 0.5) * 100}%` }} />
                     <span className="thumb-num num">{cells.length + i + 1}</span>
                   </div>
                 ))}
@@ -716,7 +703,7 @@ function App() {
           style={{ left: drag.x + 12, top: drag.y + 12 }}
         >
           {dragPhotos.slice(0, 3).map((photo, i) => (
-            <div key={photo.id} className={`ghost-card depth-${i}`} style={{ backgroundImage: `url(${photo.src})`, zIndex: 3 - i }} />
+            <div key={photo.id} className={`ghost-card depth-${i}`} style={{ backgroundImage: `url(${photo.thumb ?? photo.src})`, zIndex: 3 - i }} />
           ))}
           {drag.ids.length > 1 && <span className="ghost-count num">{drag.ids.length}</span>}
         </div>

@@ -55,11 +55,29 @@ export function effectiveDpi(photo: Photo, cell: { width: number; height: number
 /** Photos below this resolution in their cell get a warning. */
 export const LOW_RES_DPI = 150;
 
-async function loadImage(src: string): Promise<HTMLImageElement> {
+interface DecodedPhoto {
+  source: CanvasImageSource;
+  width: number;
+  height: number;
+  /** Frees the decoded pixels now, instead of waiting for garbage collection. */
+  release: () => void;
+}
+
+/**
+ * Decodes one photo for drawing. An ImageBitmap can be closed right after use, so a hundred
+ * full-size photos never sit in memory at once. Browsers that run low on memory drop decoded
+ * images silently, which leaves empty cells in the export.
+ */
+async function decodePhoto(src: string): Promise<DecodedPhoto> {
+  if (typeof createImageBitmap === "function") {
+    const blob = await (await fetch(src)).blob();
+    const bitmap = await createImageBitmap(blob);
+    return { source: bitmap, width: bitmap.width, height: bitmap.height, release: () => bitmap.close() };
+  }
   const image = new Image();
   image.src = src;
   await image.decode();
-  return image;
+  return { source: image, width: image.naturalWidth, height: image.naturalHeight, release: () => (image.src = "") };
 }
 
 export interface RenderOptions {
@@ -91,9 +109,13 @@ export async function renderFrame(config: GridConfig, photos: Photo[], options: 
     const left = Math.round(mmToPx(cell.x));
     const top = Math.round(mmToPx(cell.y));
     const target = { width: Math.round(mmToPx(cell.x + cell.width)) - left, height: Math.round(mmToPx(cell.y + cell.height)) - top };
-    const image = await loadImage(photo.src);
-    const crop = coverCrop({ width: image.naturalWidth, height: image.naturalHeight }, target, photo.focus);
-    context.drawImage(image, crop.x, crop.y, crop.width, crop.height, left, top, target.width, target.height);
+    const decoded = await decodePhoto(photo.src);
+    try {
+      const crop = coverCrop({ width: decoded.width, height: decoded.height }, target, photo.focus);
+      context.drawImage(decoded.source, crop.x, crop.y, crop.width, crop.height, left, top, target.width, target.height);
+    } finally {
+      decoded.release();
+    }
     options.onProgress?.(index + 1, total);
     // Let the page repaint between photos so progress shows.
     await new Promise((resolve) => setTimeout(resolve, 0));

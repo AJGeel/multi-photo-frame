@@ -79,7 +79,7 @@ export function Canvas(props: CanvasProps) {
               {photo ? (
                 // Local blob URLs: next/image optimization does not apply.
                 // oxlint-disable-next-line next/no-img-element
-                <img src={photo.src} alt="" draggable={false} style={{ objectPosition: `${focus.x * 100}% ${focus.y * 100}%` }} />
+                <img src={photo.thumb ?? photo.src} decoding="async" alt="" draggable={false} style={{ objectPosition: `${focus.x * 100}% ${focus.y * 100}%` }} />
               ) : (
                 <span className="cell-num num">{index + 1}</span>
               )}

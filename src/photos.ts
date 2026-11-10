@@ -2,6 +2,8 @@ export interface Photo {
   id: string;
   /** Object URL or data URL. */
   src: string;
+  /** Small preview for the screen. The original in `src` is used for export. */
+  thumb?: string;
   name: string;
   /** Natural size in pixels, when known. Used for the low-resolution warning and crop dragging. */
   width?: number;
