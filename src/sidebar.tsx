@@ -1,7 +1,7 @@
 "use client";
 
 import { computeCells, type GridConfig } from "./grid";
-import { exportSize, isOversize, MAX_CANVAS_SIDE, EXPORT_DPI } from "./export";
+import { EXPORT_DPI, exportSize, isOversize, MAX_CANVAS_SIDE } from "./export";
 import { Info, Reset, Rotate, Warning } from "./icons";
 import { isLandscape } from "./presets";
 import { SizePicker } from "./size-picker";
@@ -24,6 +24,7 @@ interface SidebarProps {
   onRotate: () => void;
   onReset: () => void;
 }
+
 
 const SHORTCUTS: { label: string; keys: string[] }[] = [
   { label: "Select all", keys: ["mod", "A"] },

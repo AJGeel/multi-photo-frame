@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, migrateLegacyPreferences, parseCollapsed, parseStoredConfig, usePreferences } from "./preferences";
+import { DEFAULT_CONFIG, migrateLegacyPreferences, parseCollapsed, parseExportOptions, parseStoredConfig, usePreferences } from "./preferences";
 
 const KEY = "multi-photo-frame:preferences";
 
@@ -75,5 +75,16 @@ describe("migrateLegacyPreferences", () => {
     localStorage.setItem(LEGACY, "old");
     migrateLegacyPreferences();
     expect(localStorage.getItem(KEY)).toBe("new");
+  });
+});
+
+describe("parseExportOptions", () => {
+  it("defaults to JPEG at 95", () => {
+    expect(parseExportOptions(null)).toEqual({ format: "jpeg", quality: 95 });
+  });
+
+  it("keeps valid values and clamps quality", () => {
+    expect(parseExportOptions({ exportOptions: { format: "pdf", quality: 20 } })).toEqual({ format: "pdf", quality: 50 });
+    expect(parseExportOptions({ exportOptions: { format: "gif", quality: "high" } })).toEqual({ format: "jpeg", quality: 95 });
   });
 });

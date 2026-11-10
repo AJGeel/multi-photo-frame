@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coverCrop, effectiveDpi, EXPORT_DPI, exportFilename, exportSize, exportWarning, mmToPx } from "./export";
+import { buildPdf, coverCrop, effectiveDpi, EXPORT_DPI, exportFilename, exportSize, exportWarning, mmToPx, setJpegDpi } from "./export";
 
 describe("export size", () => {
   it("is 300 DPI", () => {
@@ -13,9 +13,9 @@ describe("export size", () => {
   });
 
   it("names files with size, orientation and rows x columns", () => {
-    expect(exportFilename({ width: 420, height: 297, rows: 3, columns: 4 })).toBe("gallery-a3-landscape-3x4.png");
-    expect(exportFilename({ width: 300, height: 400, rows: 2, columns: 2 })).toBe("gallery-30x40-portrait-2x2.png");
-    expect(exportFilename({ width: 1500, height: 1000, rows: 1, columns: 5 })).toBe("gallery-1500x1000mm-landscape-1x5.png");
+    expect(exportFilename({ width: 420, height: 297, rows: 3, columns: 4 })).toBe("gallery-a3-landscape-3x4.jpg");
+    expect(exportFilename({ width: 300, height: 400, rows: 2, columns: 2 }, "png")).toBe("gallery-30x40-portrait-2x2.png");
+    expect(exportFilename({ width: 1500, height: 1000, rows: 1, columns: 5 }, "pdf")).toBe("gallery-1500x1000mm-landscape-1x5.pdf");
   });
 });
 
@@ -68,5 +68,44 @@ describe("effectiveDpi", () => {
 
   it("is null when the size is unknown", () => {
     expect(effectiveDpi({ id: "b", src: "", name: "b.jpg" }, { width: 100, height: 100 })).toBeNull();
+  });
+});
+
+describe("setJpegDpi", () => {
+  it("rewrites the density of an existing JFIF header", () => {
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0xff, 0xd9]);
+    const out = setJpegDpi(jpeg, 300);
+    expect([...out.subarray(13, 18)]).toEqual([1, 1, 44, 1, 44]);
+    expect(out).toHaveLength(jpeg.length);
+    expect(jpeg[13]).toBe(0);
+  });
+
+  it("inserts a header when there is none", () => {
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xdb, 0xff, 0xd9]);
+    const out = setJpegDpi(jpeg, 300);
+    expect([...out.subarray(0, 4)]).toEqual([0xff, 0xd8, 0xff, 0xe0]);
+    expect([...out.subarray(13, 18)]).toEqual([1, 1, 44, 1, 44]);
+    expect([...out.subarray(out.length - 4)]).toEqual([0xff, 0xdb, 0xff, 0xd9]);
+  });
+});
+
+describe("buildPdf", () => {
+  const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
+  const pdf = buildPdf(jpeg, { width: 4961, height: 3508 }, { width: 420, height: 297 });
+  const text = new TextDecoder("latin1").decode(pdf);
+
+  it("sets the page to the physical size in points", () => {
+    expect(text.startsWith("%PDF-1.4")).toBe(true);
+    expect(text).toContain("/MediaBox [0 0 1190.55 841.89]");
+    expect(text).toContain("/Width 4961 /Height 3508");
+    expect(text.trimEnd().endsWith("%%EOF")).toBe(true);
+  });
+
+  it("points every xref entry at its object", () => {
+    const xrefAt = Number(/startxref\n(\d+)/.exec(text)![1]);
+    expect(text.slice(xrefAt, xrefAt + 4)).toBe("xref");
+    const offsets = [...text.slice(xrefAt).matchAll(/(\d{10}) 00000 n/g)].map((m) => Number(m[1]));
+    expect(offsets).toHaveLength(5);
+    for (const [i, offset] of offsets.entries()) expect(text.slice(offset, offset + 7)).toBe(`${i + 1} 0 obj`);
   });
 });

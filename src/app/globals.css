@@ -587,6 +587,100 @@ input {
   color: var(--text-3);
 }
 
+/* ---- Export menu ---- */
+.export-pop {
+  width: 340px;
+  padding: var(--s-2);
+  outline: none;
+}
+.export-options {
+  display: flex;
+  flex-direction: column;
+}
+.export-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: 0 var(--s-2);
+  border-radius: var(--r-sm);
+}
+.export-row:hover,
+.export-row[data-selected] {
+  background: var(--bg-hover);
+}
+.export-choice {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--s-4) var(--s-2);
+  cursor: pointer;
+  border-radius: var(--r-xs);
+}
+.export-choice:focus-visible {
+  box-shadow: var(--focus);
+}
+.radio {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.export-choice[aria-checked="true"] .radio {
+  border-color: var(--accent);
+}
+.export-choice[aria-checked="true"] .radio::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.export-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.export-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+.export-note {
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.export-quality {
+  flex: none;
+  width: 72px;
+}
+.export-foot {
+  margin-top: var(--s-2);
+  padding: var(--s-4) var(--s-2) var(--s-2);
+  border-top: 1px solid var(--border);
+}
+.export-go {
+  width: 100%;
+  justify-content: center;
+  height: 30px;
+}
+.export-go .kbd {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+  opacity: 0.8;
+}
+
 /* ---- Workspace ---- */
 .workspace {
   flex: 1;

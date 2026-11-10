@@ -3,9 +3,10 @@
 import { Tooltip } from "@base-ui/react/tooltip";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { Canvas } from "./canvas";
-import { canvasToBlob, downloadBlob, effectiveDpi, exportFilename, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
+import { ExportMenu } from "./export-menu";
+import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
-import { Check, Close, Download, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
+import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Trash, Undo, Upload, Warning } from "./icons";
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { loadPhotos } from "./photo-files";
 import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
@@ -63,6 +64,8 @@ function App() {
   const rawConfig = usePreferences((s) => s.config);
   const setRawConfig = usePreferences((s) => s.updateConfig);
   const resetConfig = usePreferences((s) => s.resetConfig);
+  const exportOptions = usePreferences((s) => s.exportOptions);
+  const setExportOptions = usePreferences((s) => s.setExportOptions);
   const narrow = useMediaQuery(NARROW_QUERY);
 
   const [ready, setReady] = useState(false);
@@ -330,10 +333,12 @@ function App() {
     abortExport.current = controller;
     const total = Math.min(current.photos.length, cells.length);
     const size = `${pixels.width} × ${pixels.height} px`;
-    const filename = exportFilename(config);
+    const options = exportOptions;
+    const label = FORMAT_LABELS[options.format];
+    const filename = exportFilename(config, options.format);
     const progressId = toastManager.add({
       type: "progress",
-      title: "Rendering PNG",
+      title: `Rendering ${label}`,
       description: size,
       timeout: 0,
       data: { percent: 0, onCancel: () => controller.abort() },
@@ -347,14 +352,15 @@ function App() {
           const percent = total === 0 ? 0 : Math.min(Math.round((done / total) * 100), 99);
           setExporting({ percent });
           toastManager.update(progressId, {
-            description: done >= total ? `${size} · saving…` : `${size} · photo ${done + 1} of ${total}`,
+            description: done >= total ? `${size} · encoding…` : `${size} · photo ${done + 1} of ${total}`,
             data: { percent, onCancel: () => controller.abort() },
           });
         },
       });
-      downloadBlob(await canvasToBlob(canvas), filename);
+      setExporting({ percent: 99 });
+      downloadBlob(await encodeCanvas(canvas, config, options), filename);
       toastManager.close(progressId);
-      toastManager.add({ type: "success", title: "PNG exported", description: `${filename} · ${size}\nCheck your downloads folder.`, timeout: 6000 });
+      toastManager.add({ type: "success", title: `${label} exported`, description: `${filename} · ${size}\nCheck your downloads folder.`, timeout: 6000 });
     } catch (error) {
       toastManager.close(progressId);
       if (!controller.signal.aborted) {
@@ -446,30 +452,6 @@ function App() {
   const showFit = fitSuggestion !== null && !(fitSuggestion.rows === config.rows + 1 && fitSuggestion.columns === config.columns);
   const count = state.photos.length;
   const selectionLabel = draggingNow ? `Moving ${drag.ids.length}` : state.selection.length === 0 ? "No selection" : `${state.selection.length} selected`;
-  const exportLabel = narrow ? "Export" : "Export PNG";
-
-  const exportButton = (
-    <Button
-      variant="primary"
-      className="export-btn"
-      disabled={count === 0}
-      aria-busy={exporting !== null || undefined}
-      onClick={() => void runExport()}
-    >
-      {exporting ? (
-        <>
-          <Spinner />
-          <span className="num">Exporting… {exporting.percent}%</span>
-        </>
-      ) : (
-        <>
-          <Download size={14} />
-          {exportLabel}
-          {oversize && <span className="warn-dot" role="img" aria-label="Large export warning" />}
-        </>
-      )}
-    </Button>
-  );
 
   return (
     <div className="app">
@@ -520,9 +502,15 @@ function App() {
             <Redo />
           </IconButton>
           <span className="divider" />
-          <Tip label={count === 0 ? "Add photos to export" : "Export PNG"} keys={count === 0 ? undefined : ["mod", "E"]}>
-            {exportButton}
-          </Tip>
+          <ExportMenu
+            options={exportOptions}
+            onChange={setExportOptions}
+            onExport={() => void runExport()}
+            noPhotos={count === 0}
+            busy={exporting}
+            oversize={oversize}
+            compact={narrow}
+          />
         </div>
       </header>
 

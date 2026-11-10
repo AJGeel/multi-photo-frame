@@ -124,17 +124,110 @@ export async function renderFrame(config: GridConfig, photos: Photo[], options: 
   return canvas;
 }
 
-/** For example `gallery-a3-landscape-3x4.png`: size, orientation, rows x columns. */
-export function exportFilename(config: Pick<GridConfig, "width" | "height" | "rows" | "columns">): string {
-  const size = findPreset(config)?.id ?? `${config.width}x${config.height}mm`;
-  const orientation = isLandscape(config) ? "landscape" : "portrait";
-  return `gallery-${size}-${orientation}-${config.rows}x${config.columns}.png`;
+export type ExportFormat = "jpeg" | "png" | "pdf";
+
+export interface ExportOptions {
+  format: ExportFormat;
+  /** JPEG quality in percent, 50 to 100. Used by JPEG and PDF. */
+  quality: number;
 }
 
-export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+export const DEFAULT_EXPORT_OPTIONS: ExportOptions = { format: "jpeg", quality: 95 };
+
+export const FORMAT_LABELS: Record<ExportFormat, string> = { jpeg: "JPEG", png: "PNG", pdf: "PDF" };
+const EXTENSIONS: Record<ExportFormat, string> = { jpeg: "jpg", png: "png", pdf: "pdf" };
+
+/** For example `gallery-a3-landscape-3x4.jpg`: size, orientation, rows x columns. */
+export function exportFilename(config: Pick<GridConfig, "width" | "height" | "rows" | "columns">, format: ExportFormat = "jpeg"): string {
+  const size = findPreset(config)?.id ?? `${config.width}x${config.height}mm`;
+  const orientation = isLandscape(config) ? "landscape" : "portrait";
+  return `gallery-${size}-${orientation}-${config.rows}x${config.columns}.${EXTENSIONS[format]}`;
+}
+
+export function canvasToBlob(canvas: HTMLCanvasElement, type = "image/png", quality?: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => (blob === null ? reject(new Error("The browser could not encode the image. The size is probably too large.")) : resolve(blob)), "image/png");
+    canvas.toBlob(
+      (blob) => (blob === null ? reject(new Error("The browser could not encode the image. The size is probably too large.")) : resolve(blob)),
+      type,
+      quality,
+    );
   });
+}
+
+/** Writes the print resolution into a JPEG's JFIF header, so editors open it at its real size. */
+export function setJpegDpi(jpeg: Uint8Array, dpi: number): Uint8Array<ArrayBuffer> {
+  const isJfif = jpeg[2] === 0xff && jpeg[3] === 0xe0 && jpeg[6] === 0x4a && jpeg[7] === 0x46 && jpeg[8] === 0x49 && jpeg[9] === 0x46;
+  const density = [1, (dpi >> 8) & 0xff, dpi & 0xff, (dpi >> 8) & 0xff, dpi & 0xff];
+  if (isJfif) {
+    const out = jpeg.slice();
+    out.set(density, 13); // units (1 = per inch), then X and Y density
+    return out;
+  }
+  // No JFIF header: insert one right after the start-of-image marker.
+  const header = [0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, ...density, 0x00, 0x00];
+  const out = new Uint8Array(jpeg.length + header.length);
+  out.set(jpeg.subarray(0, 2), 0);
+  out.set(header, 2);
+  out.set(jpeg.subarray(2), 2 + header.length);
+  return out;
+}
+
+/** A one-page PDF at the exact physical size, holding the JPEG as-is. No library needed. */
+export function buildPdf(jpeg: Uint8Array, pixels: { width: number; height: number }, mm: { width: number; height: number }): Uint8Array<ArrayBuffer> {
+  const pt = (value: number) => ((value / MM_PER_INCH) * 72).toFixed(2);
+  const width = pt(mm.width);
+  const height = pt(mm.height);
+  const content = `q ${width} 0 0 ${height} 0 0 cm /Im0 Do Q`;
+  const encoder = new TextEncoder();
+  const chunks: Uint8Array[] = [];
+  const offsets: number[] = [];
+  let length = 0;
+  const push = (chunk: Uint8Array | string) => {
+    const bytes = typeof chunk === "string" ? encoder.encode(chunk) : chunk;
+    chunks.push(bytes);
+    length += bytes.length;
+  };
+  const object = (id: number, body: string, stream?: Uint8Array) => {
+    offsets[id] = length;
+    push(`${id} 0 obj\n${body}`);
+    if (stream) {
+      push("\nstream\n");
+      push(stream);
+      push("\nendstream");
+    }
+    push("\nendobj\n");
+  };
+
+  push("%PDF-1.4\n");
+  object(1, "<< /Type /Catalog /Pages 2 0 R >>");
+  object(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  object(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  object(
+    4,
+    `<< /Type /XObject /Subtype /Image /Width ${pixels.width} /Height ${pixels.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>`,
+    jpeg,
+  );
+  object(5, `<< /Length ${content.length} >>`, encoder.encode(content));
+  const xref = length;
+  push(`xref\n0 6\n0000000000 65535 f \n${[1, 2, 3, 4, 5].map((id) => `${String(offsets[id]).padStart(10, "0")} 00000 n \n`).join("")}`);
+  push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+
+  const out = new Uint8Array(length);
+  let position = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, position);
+    position += chunk.length;
+  }
+  return out;
+}
+
+/** Encodes the rendered canvas in the chosen format. */
+export async function encodeCanvas(canvas: HTMLCanvasElement, config: GridConfig, options: ExportOptions): Promise<Blob> {
+  if (options.format === "png") return canvasToBlob(canvas);
+  const jpegBlob = await canvasToBlob(canvas, "image/jpeg", options.quality / 100);
+  const jpeg = new Uint8Array(await jpegBlob.arrayBuffer());
+  if (options.format === "jpeg") return new Blob([setJpegDpi(jpeg, EXPORT_DPI)], { type: "image/jpeg" });
+  return new Blob([buildPdf(jpeg, { width: canvas.width, height: canvas.height }, config)], { type: "application/pdf" });
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
