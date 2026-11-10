@@ -129,6 +129,22 @@ function App() {
     setRawConfig((c) => (c.rows === rows && c.columns === columns ? c : { ...c, rows, columns }));
   }, [ready, state.grid, setRawConfig]);
 
+  // Until the saved settings are applied and the paper is measured, the app shows only its empty shell.
+  // That hides the switch from defaults to saved values. Transitions stay off until a frame after that.
+  const loaded = ready && workspace !== null;
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!loaded) return;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setSettled(true));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [loaded]);
+
   const config = useMemo(() => sanitizeConfig({ ...rawConfig, ...state.grid }), [rawConfig, state.grid]);
   const cells = useMemo(() => computeCells(config), [config]);
   const selected = useMemo(() => new Set(state.selection), [state.selection]);
@@ -529,7 +545,7 @@ function App() {
   const selectionLabel = draggingNow ? `Moving ${drag.ids.length}` : state.selection.length === 0 ? "No selection" : `${state.selection.length} selected`;
 
   return (
-    <div className="app">
+    <div className="app" data-loaded={loaded || undefined} data-settled={settled || undefined}>
       <header className="topbar">
         <div className="brand">
           {narrow && (
@@ -642,6 +658,7 @@ function App() {
                 onKeyDown={onCellKeyDown}
                 onFocusCell={setFocusCell}
                 onAddPhotos={openPicker}
+                restored={photosRestored}
               />
             </Frame>
           </div>

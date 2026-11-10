@@ -1401,6 +1401,55 @@ input {
   transition: width var(--dur-slow) linear;
 }
 
+/* ---- First load ---- */
+/* Saved settings are applied after mount. Until then only the empty shell shows (no content to jump around);
+   then the content fades in, and transitions stay off until it has settled. */
+.app:not([data-loaded]) :is(.topbar > *, .sidebar > *, .canvas-wrap, .statusline > *) {
+  opacity: 0;
+  pointer-events: none;
+}
+/* A soft staggered entrance: the chrome drifts in first, then the paper settles into place. */
+.app[data-loaded] :is(.topbar > *, .sidebar > *, .statusline > *) {
+  animation: enter-drift 520ms var(--ease-out-soft) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+.app[data-loaded] .topbar > * {
+  --enter-delay: 0ms;
+}
+.app[data-loaded] .sidebar > * {
+  --enter-delay: 60ms;
+}
+.app[data-loaded] .statusline > * {
+  --enter-delay: 120ms;
+}
+.app[data-loaded] .canvas-wrap {
+  animation: enter-settle 700ms var(--ease-out-soft) 90ms backwards;
+}
+.app:not([data-settled]) *,
+.app:not([data-settled]) *::before,
+.app:not([data-settled]) *::after {
+  transition: none !important;
+}
+@media (max-width: 899px) {
+  /* The sidebar is a drawer here, so do not reserve its column before the layout is known. */
+  .app:not([data-loaded]) .sidebar-wrap:not(.drawer) {
+    display: none;
+  }
+}
+@keyframes enter-drift {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes enter-settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(4px);
+  }
+}
+
 /* ---- Motion ---- */
 @keyframes spin {
   to {

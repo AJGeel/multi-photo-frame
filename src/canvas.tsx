@@ -30,6 +30,8 @@ interface CanvasProps {
   onKeyDown: (event: KeyboardEvent<HTMLElement>, index: number) => void;
   onFocusCell: (index: number) => void;
   onAddPhotos: () => void;
+  /** False while saved photos are still loading, so the empty-state card does not flash up. */
+  restored: boolean;
 }
 
 export function Canvas(props: CanvasProps) {
@@ -108,7 +110,7 @@ export function Canvas(props: CanvasProps) {
         })}
       </div>
 
-      {photos.length === 0 && (
+      {props.restored && photos.length === 0 && (
         <div className="empty-wrap">
           <div className="empty-card">
             <div className="empty-icon">
