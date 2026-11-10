@@ -12,6 +12,7 @@ import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./gr
 import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { loadPhotos } from "./photo-files";
+import { loadSession, saveSession } from "./photo-store";
 import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
 import { findPreset, isLandscape, PRESETS, presetSize } from "./presets";
 import { migrateLegacyPreferences, usePreferences } from "./preferences";
@@ -75,6 +76,7 @@ function App() {
   const narrow = useMediaQuery(NARROW_QUERY);
 
   const [ready, setReady] = useState(false);
+  const [photosRestored, setPhotosRestored] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notice, setNotice] = useState<ClampNotice | null>(null);
   const [halo, setHalo] = useState<ConfigKey | null>(null);
@@ -108,6 +110,18 @@ function App() {
       setReady(true);
     });
   }, []);
+  // Photos are kept in the browser (IndexedDB) so a reload or a later visit picks up where it stopped.
+  useEffect(() => {
+    void loadSession().then((photos) => {
+      dispatch({ type: "restore", photos });
+      setPhotosRestored(true);
+    });
+  }, []);
+  useEffect(() => {
+    if (!photosRestored) return;
+    const timer = setTimeout(() => void saveSession(state.photos), 500);
+    return () => clearTimeout(timer);
+  }, [photosRestored, state.photos]);
   useEffect(() => {
     if (!ready) return;
     const { rows, columns } = state.grid;
@@ -201,6 +215,13 @@ function App() {
     setFrame(rolledFrame);
     setNotice(null);
     setHalo(null);
+  }
+
+  /** Removes every photo. The saved copies are deleted with them, which frees the browser storage. */
+  function clearPhotos() {
+    const total = stateRef.current.photos.length;
+    dispatch({ type: "remove", ids: stateRef.current.photos.map((p) => p.id) });
+    toastManager.add({ type: "info", title: `Cleared ${total} ${total === 1 ? "photo" : "photos"} — undo to bring them back`, timeout: 6000 });
   }
 
   // ---- Adding photos --------------------------------------------------------------------------
@@ -495,18 +516,6 @@ function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Photos live only in this tab, so warn before they are lost.
-  const hasPhotos = state.photos.length > 0;
-  useEffect(() => {
-    if (!hasPhotos) return;
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [hasPhotos]);
-
   // ---- Render ---------------------------------------------------------------------------------
 
   const dragPhotos = drag ? state.photos.filter((p) => drag.ids.includes(p.id)) : [];
@@ -735,9 +744,14 @@ function App() {
               <span className="divider small" />
               <span className="local-hint">
                 <Laptop size={12} />
-                Photos stay in this tab and clear on reload
+                Photos are saved in this browser for 7 days
               </span>
             </>
+          )}
+          {count > 0 && (
+            <Button variant="ghost" compact onClick={clearPhotos}>
+              Clear saved photos
+            </Button>
           )}
         </div>
       </footer>

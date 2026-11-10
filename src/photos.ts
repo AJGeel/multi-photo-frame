@@ -44,6 +44,8 @@ export type SelectMode = "replace" | "toggle" | "range";
 
 export type PhotosAction =
   | { type: "add"; photos: Photo[]; index?: number }
+  /** Puts back saved photos at startup, without history. Ignored once photos exist. */
+  | { type: "restore"; photos: Photo[] }
   | { type: "remove"; ids: string[] }
   /** Moves ids (kept in their current relative order) so they start at
    *  `toIndex`, an index into the list with the moved photos removed. */
@@ -116,6 +118,9 @@ export function photosReducer(state: PhotosState, action: PhotosAction): PhotosS
       const photos = [...state.photos.slice(0, index), ...fresh, ...state.photos.slice(index)];
       return commit(state, photos);
     }
+    case "restore":
+      if (state.photos.length > 0 || action.photos.length === 0) return state;
+      return { ...state, photos: action.photos };
     case "remove": {
       const ids = new Set(action.ids);
       const photos = state.photos.filter((p) => !ids.has(p.id));
