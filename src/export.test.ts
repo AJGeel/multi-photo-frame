@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coverCrop, EXPORT_DPI, exportFilename, exportSize, exportWarning, mmToPx } from "./export";
+import { coverCrop, effectiveDpi, EXPORT_DPI, exportFilename, exportSize, exportWarning, mmToPx } from "./export";
 
 describe("export size", () => {
   it("is 300 DPI", () => {
@@ -12,8 +12,10 @@ describe("export size", () => {
     expect(exportSize({ width: 420, height: 297 })).toEqual({ width: 4961, height: 3508 });
   });
 
-  it("names files with size and DPI", () => {
-    expect(exportFilename({ width: 420, height: 297 })).toBe("gallery-frame-420x297mm-300dpi.png");
+  it("names files with size, orientation and rows x columns", () => {
+    expect(exportFilename({ width: 420, height: 297, rows: 3, columns: 4 })).toBe("gallery-a3-landscape-3x4.png");
+    expect(exportFilename({ width: 300, height: 400, rows: 2, columns: 2 })).toBe("gallery-30x40-portrait-2x2.png");
+    expect(exportFilename({ width: 1500, height: 1000, rows: 1, columns: 5 })).toBe("gallery-1500x1000mm-landscape-1x5.png");
   });
 });
 
@@ -39,5 +41,32 @@ describe("coverCrop", () => {
 
   it("uses the whole photo when the ratios match", () => {
     expect(coverCrop({ width: 300, height: 200 }, { width: 30, height: 20 })).toEqual({ x: 0, y: 0, width: 300, height: 200 });
+  });
+});
+
+describe("coverCrop focus", () => {
+  it("moves the crop window with the focus point", () => {
+    const source = { width: 400, height: 200 };
+    const target = { width: 100, height: 100 };
+    expect(coverCrop(source, target, { x: 0, y: 0 }).x).toBe(0);
+    expect(coverCrop(source, target, { x: 1, y: 1 }).x).toBe(200);
+  });
+});
+
+describe("effectiveDpi", () => {
+  const photo = { id: "a", src: "", name: "a.jpg", width: 3000, height: 2000 };
+
+  it("is the source pixels across the cell width, per inch", () => {
+    // 3000 px across a 254 mm (10 inch) wide cell of the same shape: 300 DPI.
+    expect(effectiveDpi(photo, { width: 254, height: 169.333333 })).toBeCloseTo(300, 0);
+  });
+
+  it("counts only the visible part of a cropped photo", () => {
+    // Square cell: 2000 source px across 100 mm.
+    expect(effectiveDpi(photo, { width: 100, height: 100 })).toBeCloseTo(508, 0);
+  });
+
+  it("is null when the size is unknown", () => {
+    expect(effectiveDpi({ id: "b", src: "", name: "b.jpg" }, { width: 100, height: 100 })).toBeNull();
   });
 });

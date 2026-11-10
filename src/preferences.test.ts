@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, parseStoredConfig, usePreferences } from "./preferences";
+import { DEFAULT_CONFIG, parseCollapsed, parseStoredConfig, usePreferences } from "./preferences";
 
 const KEY = "gallery-frame-maker:preferences";
 
@@ -40,5 +40,20 @@ describe("parseStoredConfig", () => {
     expect(parseStoredConfig(null)).toEqual(DEFAULT_CONFIG);
     expect(parseStoredConfig({ config: { ...DEFAULT_CONFIG, rows: null } })).toEqual(DEFAULT_CONFIG);
     expect(parseStoredConfig({ config: { rows: 2 } })).toEqual(DEFAULT_CONFIG);
+  });
+});
+
+describe("collapsed sections", () => {
+  it("persists and restores", async () => {
+    usePreferences.getState().setCollapsed("grid", true);
+    expect(JSON.parse(localStorage.getItem(KEY)!).state.collapsed).toEqual({ grid: true });
+    localStorage.setItem(KEY, JSON.stringify({ state: { config: DEFAULT_CONFIG, collapsed: { grid: true } }, version: 1 }));
+    await usePreferences.persist.rehydrate();
+    expect(usePreferences.getState().collapsed).toEqual({ grid: true });
+  });
+
+  it("ignores junk", () => {
+    expect(parseCollapsed({ collapsed: { a: true, b: "yes" } })).toEqual({ a: true });
+    expect(parseCollapsed(null)).toEqual({});
   });
 });

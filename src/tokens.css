@@ -1,0 +1,124 @@
+/* Design tokens. Every colour in the app comes from here. */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-app: #0b0c0e;
+  --bg-panel: #101114;
+  --bg-elev: #17181c;
+  --bg-elev-2: #1c1d22;
+  --bg-hover: #22232a;
+  --ws: #0b0c0e;
+  --dot: #1c1e23;
+  --border: #24262c;
+  --border-strong: #30323a;
+  --text: #e8e9ec;
+  --text-2: #a4a7b0;
+  --text-3: #7f828c;
+  --accent: #5b5ae6;
+  --accent-strong: #4f4ed6;
+  --accent-text: #a9a8ff;
+  --accent-soft: rgba(91, 90, 230, 0.18);
+  --drop-tint: rgba(91, 90, 230, 0.07);
+  --on-accent: #fff;
+  --warn: #e5a54b;
+  --warn-soft: rgba(229, 165, 75, 0.1);
+  --warn-border: rgba(229, 165, 75, 0.3);
+  --danger: #f07272;
+  --success: #4cc38a;
+  --tip-bg: #2b2d34;
+  --tip-text: #f1f2f4;
+  --scrim: rgba(0, 0, 0, 0.5);
+  --paper-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 24px 64px rgba(0, 0, 0, 0.55);
+  --pop-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.5);
+  --focus: 0 0 0 2px var(--bg-app), 0 0 0 4px #7a79f5;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg-app: #f6f6f8;
+    --bg-panel: #fff;
+    --bg-elev: #f7f7f9;
+    --bg-elev-2: #fff;
+    --bg-hover: #efeff2;
+    --ws: #eeeef1;
+    --dot: #d6d7dd;
+    --border: #e4e4e9;
+    --border-strong: #d3d4da;
+    --text: #16171b;
+    --text-2: #4e515a;
+    --text-3: #696c76;
+    --accent: #5250d8;
+    --accent-strong: #4846c9;
+    --accent-text: #4644c4;
+    --accent-soft: rgba(82, 80, 216, 0.12);
+    --drop-tint: rgba(82, 80, 216, 0.06);
+    --warn: #9a5a08;
+    --warn-soft: #fdf5e8;
+    --warn-border: #f0d3a2;
+    --danger: #c23636;
+    --success: #1d8754;
+    --tip-bg: #1d1e23;
+    --tip-text: #f4f4f6;
+    --scrim: rgba(20, 20, 30, 0.28);
+    --paper-shadow: 0 0 0 1px rgba(16, 17, 22, 0.06), 0 14px 40px rgba(30, 30, 50, 0.14);
+    --pop-shadow: 0 0 0 1px rgba(16, 17, 22, 0.07), 0 10px 28px rgba(30, 30, 50, 0.16);
+    --focus: 0 0 0 2px #fff, 0 0 0 4px #5250d8;
+  }
+}
+
+:root {
+  /* Paper and everything drawn on it keep light colours in both themes. */
+  --paper: #fff;
+  --cell-empty: #f2f2f4;
+  --cell-empty-line: #c6c7ce;
+  --cell-empty-num: #6b6d75;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --card-border: #e2e2e7;
+  --card-text: #16171b;
+  --card-text-2: #4e515a;
+  --card-text-3: #696c76;
+  --card-line: #b9bac3;
+  --card-accent: #5250d8;
+  --card-accent-strong: #4846c9;
+  --card-shadow: 0 12px 36px rgba(20, 20, 40, 0.14);
+  --on-photo: #fff;
+  --on-photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --badge-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --ghost-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  --ghost-shadow-top: 0 10px 28px rgba(0, 0, 0, 0.35);
+  --chip-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  --tip-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  --tip-kbd-bg: rgba(255, 255, 255, 0.08);
+  --tip-kbd-border: rgba(255, 255, 255, 0.16);
+  --tip-kbd-text: #d6d7dc;
+  --pill-shadow: 0 10px 28px rgba(40, 40, 120, 0.35);
+
+  --r-xs: 4px;
+  --r-sm: 5px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-xl: 10px;
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 12px;
+  --s-6: 16px;
+  --s-7: 20px;
+  --s-8: 24px;
+  --s-9: 32px;
+  --dur-fast: 100ms;
+  --dur-base: 120ms;
+  --dur-slow: 150ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}

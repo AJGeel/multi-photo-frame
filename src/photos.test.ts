@@ -122,3 +122,39 @@ describe("dropIndex", () => {
     expect(dropIndex(photos, ["a"], 20)).toBe(3);
   });
 });
+
+describe("swap", () => {
+  it("exchanges two photos as one undo entry", () => {
+    const state = run([{ type: "swap", a: "a", b: "c" }], abcd());
+    expect(ids(state)).toEqual(["c", "b", "a", "d"]);
+    expect(ids(photosReducer(state, { type: "undo" }))).toEqual(["a", "b", "c", "d"]);
+  });
+});
+
+describe("focus", () => {
+  it("clamps, records history and skips no-ops", () => {
+    const state = run([{ type: "focus", id: "a", focus: { x: 2, y: 0.25 } }], abcd());
+    expect(state.photos[0]!.focus).toEqual({ x: 1, y: 0.25 });
+    expect(photosReducer(state, { type: "focus", id: "a", focus: { x: 1, y: 0.25 } })).toBe(state);
+    expect(photosReducer(state, { type: "undo" }).photos[0]!.focus).toBeUndefined();
+  });
+});
+
+describe("grid history", () => {
+  it("undoes and redoes rows and columns together with photos", () => {
+    const changed = run([{ type: "setGrid", grid: { rows: 5, columns: 2 } }], abcd());
+    expect(changed.grid).toEqual({ rows: 5, columns: 2 });
+    const undone = photosReducer(changed, { type: "undo" });
+    expect(undone.grid).toEqual(initialPhotosState.grid);
+    expect(ids(undone)).toEqual(["a", "b", "c", "d"]);
+    expect(photosReducer(undone, { type: "redo" }).grid).toEqual({ rows: 5, columns: 2 });
+  });
+
+  it("ignores unchanged grids, and syncGrid leaves history alone", () => {
+    const state = abcd();
+    expect(photosReducer(state, { type: "setGrid", grid: state.grid })).toBe(state);
+    const synced = photosReducer(state, { type: "syncGrid", grid: { rows: 9, columns: 9 } });
+    expect(synced.grid).toEqual({ rows: 9, columns: 9 });
+    expect(synced.past).toBe(state.past);
+  });
+});

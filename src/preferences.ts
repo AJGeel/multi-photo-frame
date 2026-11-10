@@ -16,6 +16,9 @@ export const DEFAULT_CONFIG: GridConfig = {
 interface PreferencesState {
   /** Raw values as typed. Run through `sanitizeConfig` before use. */
   config: GridConfig;
+  /** Sidebar sections the user collapsed, by id. */
+  collapsed: Record<string, boolean>;
+  setCollapsed: (id: string, collapsed: boolean) => void;
   updateConfig: (update: (current: GridConfig) => GridConfig) => void;
   resetConfig: () => void;
 }
@@ -30,10 +33,18 @@ export function parseStoredConfig(value: unknown): GridConfig {
   return DEFAULT_CONFIG;
 }
 
+export function parseCollapsed(value: unknown): Record<string, boolean> {
+  const stored = (value as { collapsed?: Record<string, unknown> } | null)?.collapsed;
+  if (typeof stored !== "object" || stored === null) return {};
+  return Object.fromEntries(Object.entries(stored).filter(([, v]) => typeof v === "boolean")) as Record<string, boolean>;
+}
+
 export const usePreferences = create<PreferencesState>()(
   persist(
     (set) => ({
       config: DEFAULT_CONFIG,
+      collapsed: {},
+      setCollapsed: (id, collapsed) => set((state) => ({ collapsed: { ...state.collapsed, [id]: collapsed } })),
       updateConfig: (update) => set((state) => ({ config: update(state.config) })),
       resetConfig: () => set({ config: DEFAULT_CONFIG }),
     }),
@@ -42,8 +53,8 @@ export const usePreferences = create<PreferencesState>()(
       version: 1,
       // Hydrate after mount (see `FrameMaker`), so the first client render matches the static HTML.
       skipHydration: true,
-      partialize: (state) => ({ config: state.config }),
-      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted) }),
+      partialize: (state) => ({ config: state.config, collapsed: state.collapsed }),
+      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted), collapsed: parseCollapsed(persisted) }),
     },
   ),
 );

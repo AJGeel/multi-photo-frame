@@ -72,3 +72,25 @@ export function sanitizeConfig(config: GridConfig): GridConfig {
   const spacingY = tenth(config.spacingY, 0, Math.max(maxSpacingY, 0));
   return { rows, columns, spacingX, spacingY, padding, width, height };
 }
+
+/** The smallest rows x columns that holds `count` photos, keeping cells close to their current shape. */
+export function suggestGrid(count: number, config: GridConfig): { rows: number; columns: number } {
+  const current = computeCells(config)[0];
+  const targetAspect = current !== undefined && current.height > 0 ? current.width / current.height : 1;
+  let best = { rows: config.rows, columns: config.columns };
+  let bestCost = Infinity;
+  for (let columns = 1; columns <= MAX_CELLS_PER_AXIS; columns++) {
+    const rows = Math.ceil(count / columns);
+    if (rows > MAX_CELLS_PER_AXIS) continue;
+    const trial = sanitizeConfig({ ...config, rows, columns });
+    const cell = computeCells(trial)[0];
+    if (cell === undefined || trial.rows !== rows || trial.columns !== columns) continue;
+    const aspect = cell.width / cell.height;
+    const cost = (rows * columns - count) + 6 * Math.abs(Math.log(aspect / targetAspect));
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = { rows, columns };
+    }
+  }
+  return best;
+}

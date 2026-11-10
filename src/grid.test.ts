@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeCells, sanitizeConfig, type GridConfig } from "./grid";
+import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
 
 const base: GridConfig = {
   rows: 2,
@@ -54,6 +54,16 @@ describe("sanitizeConfig", () => {
     for (const cell of computeCells(result)) {
       expect(cell.width).toBeGreaterThanOrEqual(1);
       expect(cell.height).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
+describe("suggestGrid", () => {
+  it("holds every photo with as few spare cells as it can", () => {
+    for (const count of [1, 7, 13, 14, 20]) {
+      const { rows, columns } = suggestGrid(count, base);
+      expect(rows * columns).toBeGreaterThanOrEqual(count);
+      expect(rows * columns - count).toBeLessThan(Math.max(columns, rows));
     }
   });
 });
