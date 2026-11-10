@@ -6,7 +6,7 @@ import { Canvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
 import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
-import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Trash, Undo, Upload, Warning } from "./icons";
+import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { loadPhotos } from "./photo-files";
 import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
@@ -74,6 +74,7 @@ function App() {
   const [notice, setNotice] = useState<ClampNotice | null>(null);
   const [halo, setHalo] = useState<ConfigKey | null>(null);
   const [dismissedOverflow, setDismissedOverflow] = useState<number | null>(null);
+  const [importing, setImporting] = useState(0);
   const [exporting, setExporting] = useState<{ percent: number } | null>(null);
   const [focusCell, setFocusCell] = useState(0);
   const [cropId, setCropId] = useState<string | null>(null);
@@ -182,9 +183,41 @@ function App() {
 
   const addFiles = useCallback(async (files: File[], index?: number | null) => {
     const images = files.filter((file) => file.type.startsWith("image/"));
-    const loaded = (await loadPhotos(images)).filter((photo): photo is Photo => photo !== null);
-    const skipped = files.length - loaded.length;
-    if (loaded.length > 0) dispatch({ type: "add", photos: loaded, index: index ?? undefined });
+    let skipped = files.length - images.length;
+    const controller = new AbortController();
+    // Big imports take a while: show progress, and let the person stop.
+    const progressId =
+      images.length > 3
+        ? toastManager.add({
+            type: "progress",
+            title: "Importing photos",
+            description: `0 of ${images.length}`,
+            timeout: 0,
+            data: { percent: 0, onCancel: () => controller.abort() },
+          })
+        : null;
+    setImporting((count) => count + 1);
+    try {
+      const result = await loadPhotos(images, {
+        signal: controller.signal,
+        onProgress: (done, total) => {
+          if (progressId === null) return;
+          toastManager.update(progressId, {
+            description: `${done} of ${total}`,
+            data: { percent: Math.round((done / total) * 100), onCancel: () => controller.abort() },
+          });
+        },
+      });
+      skipped += result.failed;
+      // One undo entry for the whole import.
+      if (result.photos.length > 0) dispatch({ type: "add", photos: result.photos, index: index ?? undefined });
+      if (result.cancelled > 0) {
+        toastManager.add({ type: "info", title: `Import stopped — ${result.photos.length} of ${images.length} photos added`, timeout: 6000 });
+      }
+    } finally {
+      if (progressId !== null) toastManager.close(progressId);
+      setImporting((count) => count - 1);
+    }
     if (skipped > 0) {
       toastManager.add({ type: "info", title: skipped === 1 ? "1 file skipped — not an image" : `${skipped} files skipped — not images`, timeout: 6000 });
     }
@@ -637,6 +670,13 @@ function App() {
 
       <footer className="statusline">
         <div className="status-group num">
+          {importing > 0 && (
+            <>
+              <Spinner size={12} />
+              <span>Importing…</span>
+              <span aria-hidden="true">·</span>
+            </>
+          )}
           <span className="status-main">{count === 0 ? "No photos" : count === 1 ? "1 photo" : `${count} photos`}</span>
           <span aria-hidden="true">·</span>
           <span>{selectionLabel}</span>

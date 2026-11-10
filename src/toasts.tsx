@@ -30,7 +30,7 @@ function ToastList() {
             <Toast.Title className="toast-title" />
             <Toast.Description className="toast-desc" />
             {kind === "progress" && (
-              <div className="progress" role="progressbar" aria-label="Export progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={data.percent ?? 0}>
+              <div className="progress" role="progressbar" aria-label="Progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={data.percent ?? 0}>
                 <div style={{ width: `${data.percent ?? 0}%` }} />
               </div>
             )}

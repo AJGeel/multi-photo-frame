@@ -51,16 +51,39 @@ export async function loadPhoto(file: File): Promise<Photo | null> {
   }
 }
 
-/** Loads files a few at a time, keeping their order. Failed files are null. */
-export async function loadPhotos(files: File[]): Promise<(Photo | null)[]> {
-  const results: (Photo | null)[] = Array.from({ length: files.length }, () => null);
+export interface LoadOptions {
+  /** Called after each file, whether it loaded or failed. */
+  onProgress?: (done: number, total: number) => void;
+  /** Stops starting new files. Files already loading finish. */
+  signal?: AbortSignal;
+}
+
+export interface LoadResult {
+  /** Photos that loaded, in the order of the files. */
+  photos: Photo[];
+  /** Files the browser couldn't decode. */
+  failed: number;
+  /** Files never started because the import was cancelled. */
+  cancelled: number;
+}
+
+/** Loads files a few at a time, keeping their order, and hands the main thread back between files. */
+export async function loadPhotos(files: File[], options: LoadOptions = {}): Promise<LoadResult> {
+  const results: (Photo | null | undefined)[] = Array.from({ length: files.length }, () => undefined);
   let next = 0;
+  let done = 0;
   const worker = async () => {
-    while (next < files.length) {
+    while (next < files.length && !options.signal?.aborted) {
       const index = next++;
       results[index] = await loadPhoto(files[index]!);
+      options.onProgress?.(++done, files.length);
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
   };
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, files.length) }, worker));
-  return results;
+  return {
+    photos: results.filter((photo): photo is Photo => photo != null),
+    failed: results.filter((photo) => photo === null).length,
+    cancelled: results.filter((photo) => photo === undefined).length,
+  };
 }
