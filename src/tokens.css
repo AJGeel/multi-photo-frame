@@ -111,6 +111,7 @@
   --dur-fast: 100ms;
   --dur-base: 120ms;
   --dur-slow: 150ms;
+  --dur-layout: 260ms;
   --dur-collapse: 220ms;
   --dur-dialog: 180ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);

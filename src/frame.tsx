@@ -5,9 +5,8 @@ import { FRAME_STYLES, type FrameStyle } from "./frames";
 
 /** Draws a frame around the paper: four mitred sides, lit from the top left. Preview only. */
 export function Frame({ style, width, children }: { style: FrameStyle; /** Moulding width in px. */ width: number; children: ReactNode }) {
-  if (style === "none") return children;
   return (
-    <div className="framed" data-frame={style} style={{ "--f": `${width}px` } as CSSProperties}>
+    <div className="framed" data-frame={style} style={{ "--f": `${style === "none" ? 0 : width}px` } as CSSProperties}>
       <span className="frame-side top" aria-hidden="true" />
       <span className="frame-side left" aria-hidden="true" />
       <span className="frame-side right" aria-hidden="true" />

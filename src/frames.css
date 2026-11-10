@@ -1,7 +1,14 @@
 /* Frame styles for the preview. These are material colours, the same in light and dark themes.
    Light comes from the top left: the top edge is brightest, the bottom edge darkest. */
 
+/* Registered so the moulding width can transition (and the mitre clip-paths follow it). */
+@property --f {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
 .framed {
+  transition: --f var(--dur-layout) var(--ease-out), box-shadow var(--dur-layout) var(--ease-out);
   position: relative;
   padding: var(--f);
   --dir-top: to bottom;
@@ -309,4 +316,16 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+
+/* "No frame" keeps the wrapper (so switching animates) but draws nothing. */
+.framed[data-frame="none"] {
+  box-shadow: none;
+}
+.framed[data-frame="none"] > .canvas {
+  box-shadow: var(--paper-shadow);
+}
+.framed[data-frame="none"] > .canvas::after,
+.framed[data-frame="none"] .frame-side {
+  display: none;
 }

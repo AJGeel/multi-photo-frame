@@ -805,11 +805,13 @@ input {
   background: var(--paper);
   box-shadow: var(--paper-shadow);
   border-radius: 0;
+  transition: width var(--dur-layout) var(--ease-out), height var(--dur-layout) var(--ease-out), background-color var(--dur-layout) var(--ease-out);
 }
 .canvas-grid {
   position: absolute;
   inset: 0;
   display: grid;
+  transition: column-gap var(--dur-layout) var(--ease-out), row-gap var(--dur-layout) var(--ease-out), padding var(--dur-layout) var(--ease-out);
 }
 
 .workspace {
