@@ -56,6 +56,8 @@ export type PhotosAction =
   /** Replaces rows and columns without history, for loading saved settings. */
   | { type: "syncGrid"; grid: Grid }
   | { type: "select"; id: string; mode: SelectMode }
+  /** Replaces the selection, for marquee selection. */
+  | { type: "setSelection"; ids: string[] }
   | { type: "selectAll" }
   | { type: "clearSelection" }
   | { type: "undo" }
@@ -179,6 +181,13 @@ export function photosReducer(state: PhotosState, action: PhotosAction): PhotosS
       const [lo, hi] = from < to ? [from, to] : [to, from];
       const selection = state.photos.slice(lo, hi + 1).map((p) => p.id);
       return { ...state, selection };
+    }
+    case "setSelection": {
+      const wanted = new Set(action.ids);
+      const selection = inListOrder(state.photos, wanted);
+      const anchor = state.anchor !== null && wanted.has(state.anchor) ? state.anchor : (selection[0] ?? null);
+      if (selection.length === state.selection.length && selection.every((id, i) => id === state.selection[i]) && anchor === state.anchor) return state;
+      return { ...state, selection, anchor };
     }
     case "selectAll":
       return { ...state, selection: state.photos.map((p) => p.id) };

@@ -158,3 +158,14 @@ describe("grid history", () => {
     expect(synced.past).toBe(state.past);
   });
 });
+
+describe("setSelection", () => {
+  it("replaces the selection in list order, ignores unknown ids and keeps history alone", () => {
+    const before = abcd();
+    const state = photosReducer(before, { type: "setSelection", ids: ["c", "a", "zzz"] });
+    expect(state.selection).toEqual(["a", "c"]);
+    expect(state.anchor).toBe("a");
+    expect(state.past).toBe(before.past);
+    expect(photosReducer(state, { type: "setSelection", ids: ["a", "c"] })).toBe(state);
+  });
+});

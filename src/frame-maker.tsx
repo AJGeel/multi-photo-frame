@@ -16,6 +16,7 @@ import { Sidebar, type ClampNotice, type ConfigKey } from "./sidebar";
 import { toastManager, ToastHost } from "./toasts";
 import { Button, IconButton, Keys, Tip } from "./ui";
 import { useFileDrop } from "./use-file-drop";
+import { useMarquee } from "./use-marquee";
 import { useRearrange } from "./use-rearrange";
 
 const FIELD_NAMES: Record<ConfigKey, string> = {
@@ -215,6 +216,12 @@ function App() {
     },
   });
 
+  const marquee = useMarquee({
+    getSelection: () => stateRef.current.selection,
+    setSelection: (ids) => dispatch({ type: "setSelection", ids }),
+    ignore: "[data-photo-id], button, [role=toolbar], .overflow-notice, .empty-card, .toast, .tray-text, input",
+  });
+
   // ---- Cropping -------------------------------------------------------------------------------
 
   function startCrop(event: PointerEvent<HTMLElement>, photo: Photo) {
@@ -256,7 +263,7 @@ function App() {
   }
 
   function onCellClick(event: MouseEvent, index: number) {
-    if (consumeClick()) return;
+    if (consumeClick() || marquee.consumeClick()) return;
     const photo = state.photos[index];
     if (cropId !== null && photo?.id !== cropId) setCropId(null);
     if (!photo) {
@@ -317,7 +324,7 @@ function App() {
   }, [state.photos]);
 
   function onWorkspaceClick(event: MouseEvent) {
-    if (consumeClick()) return;
+    if (consumeClick() || marquee.consumeClick()) return;
     const inside = (event.target as Element).closest("[data-cell-index], [data-photo-id], [role=toolbar], .overflow-notice, .empty-card, .toast, button");
     if (inside) return;
     dispatch({ type: "clearSelection" });
@@ -524,7 +531,7 @@ function App() {
           </>
         )}
 
-        <main ref={workspaceRef} className="workspace" aria-label="Layout preview" onClick={onWorkspaceClick}>
+        <main ref={workspaceRef} className="workspace" aria-label="Layout preview" onClick={onWorkspaceClick} onPointerDown={marquee.onPointerDown}>
           {noticeVisible && (
             <div role="status" className="overflow-notice">
               <Warning size={14} />
@@ -696,6 +703,8 @@ function App() {
           {drag.ids.length > 1 && <span className="ghost-count num">{drag.ids.length}</span>}
         </div>
       )}
+
+      {marquee.rect && <div className="marquee" aria-hidden="true" style={marquee.rect} />}
 
       <div className="sr-only" aria-live="polite">
         {announcement}

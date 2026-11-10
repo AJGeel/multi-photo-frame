@@ -717,6 +717,17 @@ input {
   display: grid;
 }
 
+.workspace {
+  user-select: none;
+}
+.marquee {
+  position: fixed;
+  z-index: 45;
+  pointer-events: none;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+
 /* ---- Cells ---- */
 .cell {
   position: relative;
