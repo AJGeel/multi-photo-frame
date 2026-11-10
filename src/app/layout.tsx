@@ -4,7 +4,7 @@ import "../tokens.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gallery Frame Maker",
+  title: "Multi Photo Frame",
   description: "Lay out many photos in one printable frame image, entirely in your browser.",
 };
 

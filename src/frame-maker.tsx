@@ -9,7 +9,7 @@ import { Check, Close, Download, Laptop, Logo, Plus, Redo, Settings, Spinner, Tr
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
 import { findPreset, isLandscape, PRESETS, presetSize } from "./presets";
-import { usePreferences } from "./preferences";
+import { migrateLegacyPreferences, usePreferences } from "./preferences";
 import { Sidebar, type ClampNotice, type ConfigKey } from "./sidebar";
 import { toastManager, ToastHost } from "./toasts";
 import { Button, IconButton, Keys, Tip } from "./ui";
@@ -104,6 +104,7 @@ function App() {
   // Saved settings load after mount, so the first render matches the static HTML.
   // Rows and columns live in the photo history (for undo) and are mirrored back to the saved settings.
   useEffect(() => {
+    migrateLegacyPreferences();
     void Promise.resolve(usePreferences.persist.rehydrate()).then(() => {
       const saved = sanitizeConfig(usePreferences.getState().config);
       dispatch({ type: "syncGrid", grid: { rows: saved.rows, columns: saved.columns } });
@@ -495,7 +496,7 @@ function App() {
           <span className="logo">
             <Logo size={14} />
           </span>
-          <h1>Gallery Frame Maker</h1>
+          <h1>Multi Photo Frame</h1>
         </div>
         <div className="actions">
           {narrow ? (

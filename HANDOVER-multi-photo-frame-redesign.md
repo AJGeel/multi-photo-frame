@@ -1,7 +1,7 @@
-# Handover: Gallery Frame Maker redesign
+# Handover: Multi Photo Frame redesign
 
 **For:** Claude Code, implementing the redesign in the existing codebase.
-**Design source:** the "Gallery Frame Maker" Design canvas. `screen-reference.dc.html` sits next to this file. It is the markup that renders every screen, so read it for exact structure, sizes, and copy. Its `renderVals()` holds the layout math. Treat it as a visual reference only, and do not port its templating syntax.
+**Design source:** the "Multi Photo Frame" Design canvas. `screen-reference.dc.html` sits next to this file. It is the markup that renders every screen, so read it for exact structure, sizes, and copy. Its `renderVals()` holds the layout math. Treat it as a visual reference only, and do not port its templating syntax.
 
 **Stack constraints:** React, plain CSS, and Base UI headless components (Button, Input, Menu/Select, Tooltip, Toast). Do not add a UI framework or a CSS-in-JS library.
 
@@ -93,7 +93,7 @@ Put these in `tokens.css` and use them everywhere. Do not hard-code hex values i
 
 ```
 ┌ TopBar 48 ───────────────────────────────────────────────────────────────┐
-│ [logo] Gallery Frame Maker      [+ Add photos] [trash] | [undo][redo] | [Export PNG] │
+│ [logo] Multi Photo Frame      [+ Add photos] [trash] | [undo][redo] | [Export PNG] │
 ├ Sidebar 264 ─┬ Workspace (dotted bg, flex center) ─────────────────────────┤
 │ Canvas       │        [overflow notice]                                   │
 │ Grid         │        ┌──── paper canvas, scaled to fit ────┐             │

@@ -33,6 +33,20 @@ export function parseStoredConfig(value: unknown): GridConfig {
   return DEFAULT_CONFIG;
 }
 
+const STORAGE_KEY = "multi-photo-frame:preferences";
+const LEGACY_STORAGE_KEY = "gallery-frame-maker:preferences";
+
+/** Copies settings saved under the app's old name, once. Call before rehydrating. */
+export function migrateLegacyPreferences(): void {
+  try {
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy !== null && localStorage.getItem(STORAGE_KEY) === null) localStorage.setItem(STORAGE_KEY, legacy);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {
+    // Storage can be blocked. The defaults apply then.
+  }
+}
+
 export function parseCollapsed(value: unknown): Record<string, boolean> {
   const stored = (value as { collapsed?: Record<string, unknown> } | null)?.collapsed;
   if (typeof stored !== "object" || stored === null) return {};
@@ -49,7 +63,7 @@ export const usePreferences = create<PreferencesState>()(
       resetConfig: () => set({ config: DEFAULT_CONFIG }),
     }),
     {
-      name: "gallery-frame-maker:preferences",
+      name: STORAGE_KEY,
       version: 1,
       // Hydrate after mount (see `FrameMaker`), so the first client render matches the static HTML.
       skipHydration: true,

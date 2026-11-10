@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, parseCollapsed, parseStoredConfig, usePreferences } from "./preferences";
+import { DEFAULT_CONFIG, migrateLegacyPreferences, parseCollapsed, parseStoredConfig, usePreferences } from "./preferences";
 
-const KEY = "gallery-frame-maker:preferences";
+const KEY = "multi-photo-frame:preferences";
 
 beforeEach(() => {
   localStorage.clear();
@@ -55,5 +55,25 @@ describe("collapsed sections", () => {
   it("ignores junk", () => {
     expect(parseCollapsed({ collapsed: { a: true, b: "yes" } })).toEqual({ a: true });
     expect(parseCollapsed(null)).toEqual({});
+  });
+});
+
+describe("migrateLegacyPreferences", () => {
+  const LEGACY = "gallery-frame-maker:preferences";
+
+  it("moves settings saved under the old name", async () => {
+    localStorage.removeItem(KEY); // the store writes its defaults in beforeEach
+    localStorage.setItem(LEGACY, JSON.stringify({ state: { config: { ...DEFAULT_CONFIG, rows: 6 } }, version: 1 }));
+    migrateLegacyPreferences();
+    expect(localStorage.getItem(LEGACY)).toBeNull();
+    await usePreferences.persist.rehydrate();
+    expect(usePreferences.getState().config.rows).toBe(6);
+  });
+
+  it("keeps newer settings", () => {
+    localStorage.setItem(KEY, "new");
+    localStorage.setItem(LEGACY, "old");
+    migrateLegacyPreferences();
+    expect(localStorage.getItem(KEY)).toBe("new");
   });
 });
