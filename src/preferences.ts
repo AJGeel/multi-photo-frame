@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_EXPORT_OPTIONS, type ExportOptions } from "./export";
+import { DEFAULT_PAPER_COLOR, isHexColor } from "./paper";
 import { DEFAULT_FRAME, isFrameStyle, type FrameStyle } from "./frames";
 import type { GridConfig } from "./grid";
 
@@ -22,6 +23,9 @@ interface PreferencesState {
   collapsed: Record<string, boolean>;
   frame: FrameStyle;
   setFrame: (frame: FrameStyle) => void;
+  /** Hex colour of the paper. Part of the exported image. */
+  paperColor: string;
+  setPaperColor: (color: string) => void;
   exportOptions: ExportOptions;
   setExportOptions: (options: ExportOptions) => void;
   setCollapsed: (id: string, collapsed: boolean) => void;
@@ -64,6 +68,11 @@ export function parseFrame(value: unknown): FrameStyle {
   return isFrameStyle(stored) ? stored : DEFAULT_FRAME;
 }
 
+export function parsePaperColor(value: unknown): string {
+  const stored = (value as { paperColor?: unknown } | null)?.paperColor;
+  return isHexColor(stored) ? stored : DEFAULT_PAPER_COLOR;
+}
+
 export function parseExportOptions(value: unknown): ExportOptions {
   const stored = (value as { exportOptions?: Partial<ExportOptions> } | null)?.exportOptions;
   const format = stored?.format === "png" || stored?.format === "pdf" || stored?.format === "jpeg" ? stored.format : DEFAULT_EXPORT_OPTIONS.format;
@@ -79,6 +88,8 @@ export const usePreferences = create<PreferencesState>()(
       exportOptions: DEFAULT_EXPORT_OPTIONS,
       frame: DEFAULT_FRAME,
       setFrame: (frame) => set({ frame }),
+      paperColor: DEFAULT_PAPER_COLOR,
+      setPaperColor: (paperColor) => set({ paperColor }),
       setExportOptions: (exportOptions) => set({ exportOptions }),
       setCollapsed: (id, collapsed) => set((state) => ({ collapsed: { ...state.collapsed, [id]: collapsed } })),
       updateConfig: (update) => set((state) => ({ config: update(state.config) })),
@@ -89,8 +100,8 @@ export const usePreferences = create<PreferencesState>()(
       version: 1,
       // Hydrate after mount (see `FrameMaker`), so the first client render matches the static HTML.
       skipHydration: true,
-      partialize: (state) => ({ config: state.config, collapsed: state.collapsed, exportOptions: state.exportOptions, frame: state.frame }),
-      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted), collapsed: parseCollapsed(persisted), exportOptions: parseExportOptions(persisted), frame: parseFrame(persisted) }),
+      partialize: (state) => ({ config: state.config, collapsed: state.collapsed, exportOptions: state.exportOptions, frame: state.frame, paperColor: state.paperColor }),
+      merge: (persisted, current) => ({ ...current, config: parseStoredConfig(persisted), collapsed: parseCollapsed(persisted), exportOptions: parseExportOptions(persisted), frame: parseFrame(persisted), paperColor: parsePaperColor(persisted) }),
     },
   ),
 );

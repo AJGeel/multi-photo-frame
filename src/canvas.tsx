@@ -6,6 +6,7 @@ import { Check, Upload, Warning } from "./icons";
 import type { Focus, Photo } from "./photos";
 import type { FileDropState } from "./use-file-drop";
 import type { DragState } from "./use-rearrange";
+import { usePreferences } from "./preferences";
 import { Button } from "./ui";
 
 interface CanvasProps {
@@ -35,13 +36,14 @@ export function Canvas(props: CanvasProps) {
   const { config, scale, photos, selected, drag, fileDrop, lowRes, cropId, cropFocus } = props;
   const count = config.rows * config.columns;
   const px = (mm: number) => +(mm * scale).toFixed(1);
+  const paperColor = usePreferences((s) => s.paperColor);
   const dragging = drag !== null && !drag.returning ? drag : null;
   const dragIds = dragging ? new Set(dragging.ids) : null;
   const target = dragging ? dragging.targetIndex : fileDrop ? fileDrop.cellIndex : null;
   const chip = dragging ? (dragging.alt && dragging.ids.length === 1 ? "Swap here" : `Move ${dragging.ids.length} here`) : fileDrop ? `Insert ${fileDrop.count} here` : "";
 
   return (
-    <div className="canvas" role="group" aria-label="Photo grid" style={{ width: Math.round(config.width * scale), height: Math.round(config.height * scale) }}>
+    <div className="canvas" role="group" aria-label="Photo grid" style={{ width: Math.round(config.width * scale), height: Math.round(config.height * scale), background: paperColor }}>
       <div
         className="canvas-grid"
         style={{

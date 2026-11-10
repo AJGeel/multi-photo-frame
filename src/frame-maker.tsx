@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Key
 import { Canvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
 import { Frame } from "./frame";
+import { ShortcutsDialog } from "./shortcuts-dialog";
 import { frameRatio } from "./frames";
 import { rollDice } from "./dice";
 import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
@@ -432,6 +433,7 @@ function App() {
     try {
       const canvas = await renderFrame(config, current.photos, {
         signal: controller.signal,
+        paperColor: usePreferences.getState().paperColor,
         onProgress: (done) => {
           // Keep the bar short of full until the file is encoded.
           const percent = total === 0 ? 0 : Math.min(Math.round((done / total) * 100), 99);
@@ -727,30 +729,35 @@ function App() {
               <span className="warn">{lowRes.size} low resolution</span>
             </>
           )}
+          <span aria-hidden="true">·</span>
+          <ShortcutsDialog />
         </div>
-        <div className="status-group num">
-          {!narrow && (
-            <>
-              <span>{sizeLabel(config)}</span>
-              <span aria-hidden="true">·</span>
-            </>
+        {!narrow && (
+          <div className="status-group status-center num">
+            <span>{sizeLabel(config)}</span>
+            <span aria-hidden="true">·</span>
+            <span className={oversize ? "status-px warn strong" : "status-px"}>
+              {oversize && <Warning size={12} stroke={1.5} />}
+              {pixels.width} × {pixels.height} px at 300 DPI
+            </span>
+          </div>
+        )}
+        <div className="status-group status-right num">
+          {narrow && (
+            <span className={oversize ? "status-px warn strong" : "status-px"}>
+              {oversize && <Warning size={12} stroke={1.5} />}
+              {pixels.width} × {pixels.height} px
+            </span>
           )}
-          <span className={oversize ? "status-px warn strong" : "status-px"}>
-            {oversize && <Warning size={12} stroke={1.5} />}
-            {pixels.width} × {pixels.height} px at 300 DPI
-          </span>
           {!narrow && (
-            <>
-              <span className="divider small" />
-              <span className="local-hint">
-                <Laptop size={12} />
-                Photos are saved in this browser for 7 days
-              </span>
-            </>
+            <span className="local-hint">
+              <Laptop size={12} />
+              Photos are saved in this browser for 7 days
+            </span>
           )}
           {count > 0 && (
             <Button variant="ghost" compact onClick={clearPhotos}>
-              Clear saved photos
+              Clear photos
             </Button>
           )}
         </div>

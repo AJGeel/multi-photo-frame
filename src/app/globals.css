@@ -486,25 +486,69 @@ input {
   min-width: 0;
 }
 
-.shortcuts {
-  flex: none;
-  border-top: 1px solid var(--border);
-  padding: 10px var(--s-5) var(--s-5);
+.shortcuts-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.shortcuts-trigger:hover {
+  color: var(--text);
+}
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.45);
+}
+.dialog-popup {
+  position: fixed;
+  z-index: 61;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(340px, calc(100vw - 32px));
+  padding: var(--s-5);
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
+  background: var(--bg-elev-2);
+  border-radius: 12px;
+  box-shadow: var(--pop-shadow);
+}
+.dialog-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.dialog-close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.dialog-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 .shortcuts-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-2);
 }
 .shortcuts-note {
   font-size: 11px;
-  font-weight: 400;
   color: var(--text-3);
 }
 .shortcut-row {
@@ -1102,6 +1146,7 @@ input {
 
 /* ---- Status line ---- */
 .statusline {
+  position: relative;
   height: 28px;
   flex: none;
   display: flex;
@@ -1120,6 +1165,14 @@ input {
   align-items: center;
   gap: var(--s-4);
   min-width: 0;
+}
+.status-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.status-right {
+  margin-left: auto;
 }
 .status-main {
   color: var(--text-2);

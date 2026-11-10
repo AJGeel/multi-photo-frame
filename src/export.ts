@@ -84,9 +84,11 @@ export interface RenderOptions {
   /** Called after each photo is drawn. */
   onProgress?: (done: number, total: number) => void;
   signal?: AbortSignal;
+  /** Paper colour, as a hex string. Defaults to white. */
+  paperColor?: string;
 }
 
-/** Draws the grid on a white canvas at `EXPORT_DPI`. Photos beyond the cell count are skipped. */
+/** Draws the grid on a canvas of the paper colour at `EXPORT_DPI`. Photos beyond the cell count are skipped. */
 export async function renderFrame(config: GridConfig, photos: Photo[], options: RenderOptions = {}): Promise<HTMLCanvasElement> {
   const size = exportSize(config);
   const canvas = document.createElement("canvas");
@@ -94,7 +96,7 @@ export async function renderFrame(config: GridConfig, photos: Photo[], options: 
   canvas.height = size.height;
   const context = canvas.getContext("2d");
   if (context === null) throw new Error("Could not create a drawing surface. The size is probably too large for this browser.");
-  context.fillStyle = "#ffffff";
+  context.fillStyle = options.paperColor ?? "#ffffff";
   context.fillRect(0, 0, size.width, size.height);
   context.imageSmoothingQuality = "high";
 

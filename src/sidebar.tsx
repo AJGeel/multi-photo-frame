@@ -6,8 +6,11 @@ import { FramePicker } from "./frame";
 import { frameLabel, type FrameStyle } from "./frames";
 import { Dice, Info, Reset, Rotate, Warning } from "./icons";
 import { isLandscape } from "./presets";
+import { PaperPicker } from "./paper-picker";
+import { paperLabel } from "./paper";
+import { usePreferences } from "./preferences";
 import { SizePicker } from "./size-picker";
-import { Button, IconButton, Keys, Labeled, NumberField, SidebarSection } from "./ui";
+import { Button, IconButton, Labeled, NumberField, SidebarSection } from "./ui";
 
 export type ConfigKey = keyof GridConfig;
 
@@ -31,16 +34,6 @@ interface SidebarProps {
 }
 
 
-const SHORTCUTS: { label: string; keys: string[] }[] = [
-  { label: "Select all", keys: ["mod", "A"] },
-  { label: "Add to range", keys: ["shift", "Click"] },
-  { label: "Select multiple", keys: ["mod", "Click"] },
-  { label: "Clear selection", keys: ["Esc"] },
-  { label: "Remove", keys: ["backspace"] },
-  { label: "Undo", keys: ["mod", "Z"] },
-  { label: "Redo", keys: ["shift", "mod", "Z"] },
-];
-
 function Notice({ notice, keys }: { notice: ClampNotice | null; keys: ConfigKey[] }) {
   if (!notice || !keys.includes(notice.key)) return null;
   return (
@@ -52,6 +45,7 @@ function Notice({ notice, keys }: { notice: ClampNotice | null; keys: ConfigKey[
 }
 
 export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, onRoll, frame, onFrame }: SidebarProps) {
+  const paperColor = usePreferences((s) => s.paperColor);
   const cell = computeCells(config)[0];
   const pixels = exportSize(config);
   const wide = pixels.width >= pixels.height;
@@ -132,6 +126,10 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
           </div>
         </SidebarSection>
 
+        <SidebarSection id="paper" title="Paper" meta={paperLabel(paperColor)}>
+          <PaperPicker />
+        </SidebarSection>
+
         <SidebarSection id="frame" title="Frame" meta={frameLabel(frame)}>
           <FramePicker value={frame} onChange={onFrame} />
         </SidebarSection>
@@ -149,18 +147,6 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
         </Button>
       </div>
 
-      <div className="shortcuts">
-        <div className="shortcuts-head">
-          <span>Shortcuts</span>
-          <span className="shortcuts-note">Ctrl on Windows</span>
-        </div>
-        {SHORTCUTS.map((shortcut) => (
-          <div key={shortcut.label} className="shortcut-row">
-            <span>{shortcut.label}</span>
-            <Keys keys={shortcut.keys} />
-          </div>
-        ))}
-      </div>
     </aside>
   );
 }
