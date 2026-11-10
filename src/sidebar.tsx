@@ -4,11 +4,12 @@ import { computeCells, type GridConfig } from "./grid";
 import { EXPORT_DPI, exportSize, isOversize, MAX_CANVAS_SIDE } from "./export";
 import { FramePicker } from "./frame";
 import { frameLabel, type FrameStyle } from "./frames";
-import { Dice, Info, Reset, Rotate, Warning } from "./icons";
+import { Info, Reset, Rotate, Warning } from "./icons";
 import { isLandscape } from "./presets";
 import { PaperPicker } from "./paper-picker";
 import { paperLabel } from "./paper";
 import { usePreferences } from "./preferences";
+import { ShortcutsDialog } from "./shortcuts-dialog";
 import { SizePicker } from "./size-picker";
 import { Button, IconButton, Labeled, NumberField, SidebarSection } from "./ui";
 
@@ -28,7 +29,6 @@ interface SidebarProps {
   onPickPreset: (id: string) => void;
   onRotate: () => void;
   onReset: () => void;
-  onRoll: () => void;
   frame: FrameStyle;
   onFrame: (frame: FrameStyle) => void;
 }
@@ -44,7 +44,7 @@ function Notice({ notice, keys }: { notice: ClampNotice | null; keys: ConfigKey[
   );
 }
 
-export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, onRoll, frame, onFrame }: SidebarProps) {
+export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate, onReset, frame, onFrame }: SidebarProps) {
   const paperColor = usePreferences((s) => s.paperColor);
   const cell = computeCells(config)[0];
   const pixels = exportSize(config);
@@ -141,10 +141,7 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
           <Reset size={14} />
           Reset settings
         </Button>
-        <Button variant="ghost" className="roll-btn" onClick={onRoll}>
-          <Dice size={14} />
-          Roll the dice
-        </Button>
+        <ShortcutsDialog />
       </div>
 
     </aside>

@@ -126,8 +126,16 @@ export const Laptop = icon(
 );
 export const Logo = icon(
   <>
-    <rect x="2" y="2" width="12" height="12" rx="1" />
-    <rect x="4.75" y="4.75" width="6.5" height="6.5" />
+    <rect x="1.75" y="1.75" width="12.5" height="12.5" rx="0.5" strokeWidth="1.2" />
+    <rect x="3.5" y="3.5" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="6.75" y="3.5" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="10" y="3.5" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="3.5" y="6.75" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="6.75" y="6.75" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="10" y="6.75" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="3.5" y="10" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="6.75" y="10" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    <rect x="10" y="10" width="2.5" height="2.5" fill="currentColor" stroke="none" />
   </>,
 );
 export const Spinner = ({ size = 14 }: { size?: number }) => (

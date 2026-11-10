@@ -21,9 +21,9 @@ export function ShortcutsDialog() {
   if (touch) return null;
   return (
     <Dialog.Root>
-      <Dialog.Trigger className="shortcuts-trigger">
+      <Dialog.Trigger className="btn btn-ghost">
         <Keyboard size={14} />
-        Keyboard shortcuts
+        Shortcuts
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog-backdrop" />

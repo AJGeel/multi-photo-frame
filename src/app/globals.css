@@ -90,11 +90,7 @@ input {
   white-space: nowrap;
 }
 .logo {
-  color: var(--accent-text);
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border-strong);
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -514,20 +510,6 @@ input {
   min-width: 0;
 }
 
-.shortcuts-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-.shortcuts-trigger:hover {
-  color: var(--text);
-}
 .dialog-backdrop {
   position: fixed;
   inset: 0;
@@ -1439,7 +1421,7 @@ input {
 @keyframes enter-drift {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(0px);
   }
 }
 @keyframes enter-settle {
@@ -1514,7 +1496,6 @@ input {
 @media (max-width: 899px) {
   /* Only what a phone needs. */
   .status-selection,
-  .roll-btn,
   .fit-btn,
   .notice-long,
   .empty-hint,

@@ -5,16 +5,14 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Key
 import { Canvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
 import { Frame } from "./frame";
-import { ShortcutsDialog } from "./shortcuts-dialog";
 import { frameRatio } from "./frames";
-import { rollDice } from "./dice";
 import { downloadBlob, effectiveDpi, encodeCanvas, exportFilename, FORMAT_LABELS, exportSize, isOversize, LOW_RES_DPI, renderFrame } from "./export";
 import { computeCells, sanitizeConfig, suggestGrid, type GridConfig } from "./grid";
 import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo, Upload, Warning } from "./icons";
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { loadPhotos } from "./photo-files";
 import { loadSession, saveSession } from "./photo-store";
-import { isTyping, NARROW_QUERY, useIsTouch, useMediaQuery } from "./platform";
+import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
 import { findPreset, isLandscape, PRESETS, presetSize } from "./presets";
 import { migrateLegacyPreferences, usePreferences } from "./preferences";
 import { Sidebar, type ClampNotice, type ConfigKey } from "./sidebar";
@@ -75,7 +73,6 @@ function App() {
   const frame = usePreferences((s) => s.frame);
   const setFrame = usePreferences((s) => s.setFrame);
   const narrow = useMediaQuery(NARROW_QUERY);
-  const touch = useIsTouch();
 
   const [ready, setReady] = useState(false);
   const [photosRestored, setPhotosRestored] = useState(false);
@@ -227,14 +224,6 @@ function App() {
     setHalo(null);
   }
 
-  function roll() {
-    const { config: rolled, frame: rolledFrame } = rollDice(stateRef.current.photos.length);
-    setRawConfig((current) => ({ ...current, ...rolled }));
-    dispatch({ type: "setGrid", grid: { rows: rolled.rows, columns: rolled.columns } });
-    setFrame(rolledFrame);
-    setNotice(null);
-    setHalo(null);
-  }
 
   /** Removes every photo. The saved copies are deleted with them, which frees the browser storage. */
   function clearPhotos() {
@@ -557,7 +546,7 @@ function App() {
             </Button>
           )}
           <span className="logo">
-            <Logo size={14} />
+            <Logo size={24} />
           </span>
           <h1>Multi Photo Frame</h1>
         </div>
@@ -612,7 +601,7 @@ function App() {
         {(!narrow || drawerOpen) && (
           <>
             <div className={narrow ? "sidebar-wrap drawer" : "sidebar-wrap"}>
-              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} onRoll={roll} frame={frame} onFrame={setFrame} />
+              <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} frame={frame} onFrame={setFrame} />
             </div>
           </>
         )}
@@ -746,12 +735,6 @@ function App() {
             <>
               <span aria-hidden="true">·</span>
               <span className="warn">{lowRes.size} low resolution</span>
-            </>
-          )}
-          {!touch && (
-            <>
-              <span aria-hidden="true">·</span>
-              <ShortcutsDialog />
             </>
           )}
         </div>
