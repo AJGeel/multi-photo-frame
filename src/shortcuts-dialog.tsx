@@ -2,6 +2,7 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Close, Keyboard } from "./icons";
+import { useIsTouch } from "./platform";
 import { Keys } from "./ui";
 
 const SHORTCUTS: { label: string; keys: string[] }[] = [
@@ -14,7 +15,10 @@ const SHORTCUTS: { label: string; keys: string[] }[] = [
   { label: "Redo", keys: ["shift", "mod", "Z"] },
 ];
 
+/** Renders nothing on touch devices. Use `useIsTouch` to hide anything that goes with it. */
 export function ShortcutsDialog() {
+  const touch = useIsTouch();
+  if (touch) return null;
   return (
     <Dialog.Root>
       <Dialog.Trigger className="shortcuts-trigger">

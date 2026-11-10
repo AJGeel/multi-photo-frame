@@ -26,6 +26,13 @@ export function useMediaQuery(query: string): boolean {
 
 export const NARROW_QUERY = "(max-width: 899px)";
 
+/** Phones and tablets: no hover, a finger for a pointer, and usually no hardware keyboard. */
+export const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
+
+export function useIsTouch(): boolean {
+  return useMediaQuery(TOUCH_QUERY);
+}
+
 /** Key names shown on chips: "mod" becomes the platform's modifier. */
 export function keyLabel(key: string, mac: boolean): string {
   switch (key) {

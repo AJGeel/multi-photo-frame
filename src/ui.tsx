@@ -5,12 +5,14 @@ import { Input } from "@base-ui/react/input";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { useId, useState, type ComponentProps, type ReactElement, type ReactNode } from "react";
 import { Chevron, Minus, Plus } from "./icons";
-import { keyLabel, useIsMac } from "./platform";
+import { keyLabel, useIsMac, useIsTouch } from "./platform";
 import { usePreferences } from "./preferences";
 
 /** Key chips. "mod", "shift", "alt" and "backspace" are named per platform. */
 export function Keys({ keys }: { keys: string[] }) {
   const mac = useIsMac();
+  const touch = useIsTouch();
+  if (touch) return null;
   return (
     <span className="keys">
       {keys.map((key, i) => (

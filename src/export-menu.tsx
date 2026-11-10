@@ -46,7 +46,7 @@ export function ExportMenu({ options, onChange, onExport, noPhotos, busy, oversi
               ) : (
                 <>
                   <Download size={14} />
-                  {compact ? "Export" : `Export ${label}`}
+                  <span className="export-label">{compact ? "Export" : `Export ${label}`}</span>
                   <Chevron size={12} />
                   {oversize && <span className="warn-dot" role="img" aria-label="Large export warning" />}
                 </>

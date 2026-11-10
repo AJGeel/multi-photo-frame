@@ -1464,3 +1464,182 @@ input {
     animation: none;
   }
 }
+
+/* ---- Mobile and tablet ---- */
+.settings-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+@media (max-width: 899px) {
+  .topbar {
+    gap: var(--s-4);
+    padding: 0 var(--s-4);
+  }
+  .brand {
+    flex: none;
+  }
+  .actions {
+    min-width: 0;
+  }
+  /* The selection bar has Remove, so the top bar does not need it. */
+  .remove-btn {
+    display: none;
+  }
+  .sel-name {
+    display: none;
+  }
+  .bar-btn {
+    height: 34px;
+  }
+
+  /* Tray: the text sits above the thumbnails instead of squeezing beside them. */
+  .tray {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    min-width: 0;
+  }
+  .tray-text {
+    order: -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--s-4);
+  }
+  .tray-thumbs {
+    min-width: 0;
+  }
+}
+@media (max-width: 899px) {
+  /* Only what a phone needs. */
+  .status-selection,
+  .roll-btn,
+  .fit-btn,
+  .notice-long,
+  .empty-hint,
+  .empty-hide {
+    display: none;
+  }
+  .statusline {
+    gap: var(--s-3);
+    padding: 0 var(--s-4);
+  }
+  .status-group {
+    flex: none;
+  }
+  .status-right {
+    min-width: 0;
+  }
+  .overflow-notice {
+    flex-wrap: nowrap;
+    padding-block: var(--s-2);
+  }
+  .overflow-notice > span {
+    min-width: 0;
+  }
+  .empty-sub {
+    display: none;
+  }
+}
+@media (max-width: 389px) {
+  /* Icon only, but keep the name for screen readers. */
+  .export-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+@media (max-width: 559px) {
+  /* No room for the name: keep the title for screen readers only. */
+  .brand .logo {
+    display: none;
+  }
+  .brand h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  /* Touch targets. */
+  .ib {
+    width: 36px;
+    height: 36px;
+  }
+  .ib.sm {
+    width: 28px;
+    height: 28px;
+  }
+  .btn {
+    height: 36px;
+  }
+  .btn.compact {
+    height: 30px;
+  }
+  .fld {
+    height: 36px;
+  }
+  /* 16px stops iOS zooming in on focus; every field reads at that size so they match. */
+  .fld input,
+  .size-main {
+    font-size: 16px;
+  }
+  .u,
+  .size-group {
+    font-size: 13px;
+  }
+  .sec {
+    height: 32px;
+  }
+  .toast-viewport {
+    right: var(--s-4);
+    left: var(--s-4);
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Phones: Settings is a bottom sheet, so the preview stays visible above it. */
+@media (max-width: 899px) {
+  .body {
+    flex-direction: column;
+  }
+  .sidebar-wrap.drawer {
+    position: relative;
+    order: 2;
+    width: 100%;
+    height: 48dvh;
+    flex: none;
+    z-index: 30;
+    box-shadow: 0 -6px 20px rgb(0 0 0 / 0.12);
+  }
+  .sidebar-wrap.drawer .sidebar {
+    border-right: 0;
+    border-top: 1px solid var(--border);
+  }
+  .sidebar-wrap.drawer .sidebar-actions {
+    padding: 2px var(--s-5);
+  }
+  .sidebar-wrap.drawer .sidebar-actions .btn {
+    height: 32px;
+  }
+  .sidebar-wrap.drawer .section {
+    padding-top: var(--s-2);
+    padding-bottom: var(--s-4);
+  }
+  .sidebar-wrap.drawer .sec {
+    height: 28px;
+  }
+  .app[data-sheet] .workspace {
+    padding-bottom: 0;
+    gap: 0;
+  }
+  .app[data-sheet] :is(.tray, .overflow-notice, .selection-bar) {
+    display: none;
+  }
+}

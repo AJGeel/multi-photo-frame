@@ -7,6 +7,7 @@ import type { Focus, Photo } from "./photos";
 import type { FileDropState } from "./use-file-drop";
 import type { DragState } from "./use-rearrange";
 import { usePreferences } from "./preferences";
+import { useIsTouch } from "./platform";
 import { Button } from "./ui";
 
 interface CanvasProps {
@@ -35,6 +36,7 @@ interface CanvasProps {
 }
 
 export function Canvas(props: CanvasProps) {
+  const touch = useIsTouch();
   const { config, scale, photos, selected, drag, fileDrop, lowRes, cropId, cropFocus } = props;
   const count = config.rows * config.columns;
   const px = (mm: number) => +(mm * scale).toFixed(1);
@@ -117,7 +119,7 @@ export function Canvas(props: CanvasProps) {
               <Upload size={20} stroke={1.3} />
             </div>
             <div className="empty-text">
-              <span className="empty-title">Drop photos to start</span>
+              <span className="empty-title">{touch ? "Start with your photos" : "Drop photos to start"}</span>
               <span className="empty-sub">They fill the {count} cells row by row. Everything stays on this computer.</span>
             </div>
             <Button variant="primary" onClick={props.onAddPhotos}>

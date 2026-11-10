@@ -14,7 +14,7 @@ import { Check, Close, Laptop, Logo, Plus, Redo, Settings, Spinner, Trash, Undo,
 import { dropIndex, initialPhotosState, DEFAULT_GRID, photosReducer, type Focus, type Photo } from "./photos";
 import { loadPhotos } from "./photo-files";
 import { loadSession, saveSession } from "./photo-store";
-import { isTyping, NARROW_QUERY, useMediaQuery } from "./platform";
+import { isTyping, NARROW_QUERY, useIsTouch, useMediaQuery } from "./platform";
 import { findPreset, isLandscape, PRESETS, presetSize } from "./presets";
 import { migrateLegacyPreferences, usePreferences } from "./preferences";
 import { Sidebar, type ClampNotice, type ConfigKey } from "./sidebar";
@@ -75,6 +75,7 @@ function App() {
   const frame = usePreferences((s) => s.frame);
   const setFrame = usePreferences((s) => s.setFrame);
   const narrow = useMediaQuery(NARROW_QUERY);
+  const touch = useIsTouch();
 
   const [ready, setReady] = useState(false);
   const [photosRestored, setPhotosRestored] = useState(false);
@@ -175,7 +176,8 @@ function App() {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  const overflowExtra = overflow > 0 ? 72 + (noticeVisible ? 56 : 0) : 0;
+  const sheetOpen = narrow && drawerOpen;
+  const overflowExtra = overflow > 0 && !sheetOpen ? 72 + (noticeVisible ? 56 : 0) : 0;
   // The frame adds a moulding on every side, in proportion to the paper, so fit paper plus frame.
   const shortSide = Math.min(config.width, config.height);
   const frameMm = frameRatio(frame) * shortSide;
@@ -183,7 +185,7 @@ function App() {
     ? Math.max(
         Math.min(
           (workspace.width - (narrow ? 48 : 128)) / (config.width + 2 * frameMm),
-          (workspace.height - (narrow ? 140 : 132) - overflowExtra) / (config.height + 2 * frameMm),
+          (workspace.height - (sheetOpen ? 56 : narrow ? 140 : 132) - overflowExtra) / (config.height + 2 * frameMm),
         ),
         0.05,
       )
@@ -545,13 +547,14 @@ function App() {
   const selectionLabel = draggingNow ? `Moving ${drag.ids.length}` : state.selection.length === 0 ? "No selection" : `${state.selection.length} selected`;
 
   return (
-    <div className="app" data-loaded={loaded || undefined} data-settled={settled || undefined}>
+    <div className="app" data-sheet={sheetOpen || undefined} data-loaded={loaded || undefined} data-settled={settled || undefined}>
       <header className="topbar">
         <div className="brand">
           {narrow && (
-            <IconButton label="Settings" tip="Settings" aria-expanded={drawerOpen} className={drawerOpen ? "active" : ""} onClick={() => setDrawerOpen((open) => !open)}>
-              <Settings />
-            </IconButton>
+            <Button className={drawerOpen ? "settings-btn active" : "settings-btn"} aria-expanded={drawerOpen} aria-label="Settings" onClick={() => setDrawerOpen((open) => !open)}>
+              <Settings size={14} />
+              Settings
+            </Button>
           )}
           <span className="logo">
             <Logo size={14} />
@@ -560,7 +563,7 @@ function App() {
         </div>
         <div className="actions">
           {narrow ? (
-            <IconButton label="Add photos" keys={["mod", "O"]} onClick={openPicker}>
+            <IconButton label="Add photos" keys={["mod", "O"]} className={count === 0 ? "empty-hide" : ""} onClick={openPicker}>
               <Plus />
             </IconButton>
           ) : (
@@ -582,10 +585,10 @@ function App() {
               event.target.value = "";
             }}
           />
-          <IconButton label="Remove selected" keys={["backspace"]} disabled={state.selection.length === 0} onClick={() => dispatch({ type: "remove", ids: state.selection })}>
+          <IconButton label="Remove selected" keys={["backspace"]} className="remove-btn" disabled={state.selection.length === 0} onClick={() => dispatch({ type: "remove", ids: state.selection })}>
             <Trash />
           </IconButton>
-          <span className="divider" />
+          <span className="divider remove-btn" />
           <IconButton label="Undo" tip={state.past.length === 0 ? "Nothing to undo" : "Undo"} keys={["mod", "Z"]} disabled={state.past.length === 0} onClick={() => dispatch({ type: "undo" })}>
             <Undo />
           </IconButton>
@@ -611,7 +614,6 @@ function App() {
             <div className={narrow ? "sidebar-wrap drawer" : "sidebar-wrap"}>
               <Sidebar config={config} notice={notice} halo={halo} onCommit={commitField} onPickPreset={pickPreset} onRotate={rotate} onReset={resetSettings} onRoll={roll} frame={frame} onFrame={setFrame} />
             </div>
-            {narrow && <div className="scrim" aria-hidden="true" onClick={() => setDrawerOpen(false)} />}
           </>
         )}
 
@@ -623,13 +625,13 @@ function App() {
                 <strong>
                   {overflow} {overflow === 1 ? "photo doesn’t" : "photos don’t"} fit
                 </strong>{" "}
-                <span className="muted">and won’t be exported. Add rows or columns.</span>
+                <span className="muted notice-long">and won’t be exported. Add rows or columns.</span>
               </span>
               <Button compact onClick={() => dispatch({ type: "setGrid", grid: { rows: config.rows + 1, columns: config.columns } })}>
                 Add a row
               </Button>
               {showFit && fitSuggestion && (
-                <Button compact onClick={() => dispatch({ type: "setGrid", grid: fitSuggestion })}>
+                <Button compact className="fit-btn" onClick={() => dispatch({ type: "setGrid", grid: fitSuggestion })}>
                   Use {fitSuggestion.rows} × {fitSuggestion.columns}
                 </Button>
               )}
@@ -732,8 +734,8 @@ function App() {
             </>
           )}
           <span className="status-main">{count === 0 ? "No photos" : count === 1 ? "1 photo" : `${count} photos`}</span>
-          <span aria-hidden="true">·</span>
-          <span>{selectionLabel}</span>
+          <span aria-hidden="true" className="status-selection">·</span>
+          <span className="status-selection">{selectionLabel}</span>
           {overflow > 0 && (
             <>
               <span aria-hidden="true">·</span>
@@ -746,8 +748,12 @@ function App() {
               <span className="warn">{lowRes.size} low resolution</span>
             </>
           )}
-          <span aria-hidden="true">·</span>
-          <ShortcutsDialog />
+          {!touch && (
+            <>
+              <span aria-hidden="true">·</span>
+              <ShortcutsDialog />
+            </>
+          )}
         </div>
         {!narrow && (
           <div className="status-group status-center num">
@@ -760,10 +766,10 @@ function App() {
           </div>
         )}
         <div className="status-group status-right num">
-          {narrow && (
-            <span className={oversize ? "status-px warn strong" : "status-px"}>
-              {oversize && <Warning size={12} stroke={1.5} />}
-              {pixels.width} × {pixels.height} px
+          {narrow && oversize && (
+            <span className="status-px warn strong">
+              <Warning size={12} stroke={1.5} />
+              Large size may fail
             </span>
           )}
           {!narrow && (

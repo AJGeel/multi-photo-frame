@@ -141,7 +141,7 @@ export function Sidebar({ config, notice, halo, onCommit, onPickPreset, onRotate
           <Reset size={14} />
           Reset settings
         </Button>
-        <Button variant="ghost" onClick={onRoll}>
+        <Button variant="ghost" className="roll-btn" onClick={onRoll}>
           <Dice size={14} />
           Roll the dice
         </Button>
