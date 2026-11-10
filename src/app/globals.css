@@ -82,12 +82,15 @@ input {
   min-width: 0;
 }
 .brand h1 {
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-brand);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .logo {
+  color: var(--accent-text);
   width: 22px;
   height: 22px;
   border-radius: var(--r-sm);
@@ -910,7 +913,7 @@ input {
 .empty-card {
   --accent: var(--card-accent);
   --accent-strong: var(--card-accent-strong);
-  --on-accent: #fff;
+  --on-accent: #1f1300;
   pointer-events: auto;
   width: 340px;
   max-width: calc(100% - 24px);
