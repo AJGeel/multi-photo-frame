@@ -549,6 +549,9 @@ function App() {
             <Logo size={24} />
           </span>
           <h1>Multi Photo Frame</h1>
+          <a className="byline" href="https://arthur-geel.vercel.app" target="_blank" rel="noopener noreferrer">
+            by Arthur Geel
+          </a>
         </div>
         <div className="actions">
           {narrow ? (
