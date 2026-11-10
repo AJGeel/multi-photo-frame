@@ -14,22 +14,27 @@ Requirements:
 
 ## Status
 
-Only the harness is done. There is no product code yet.
+Working app. Product code:
+- `src/photos.ts`: pure reducer for add, remove, move (multi), select, undo/redo, plus `dropIndex`. Tested.
+- `src/grid.ts`: `computeCells` and `sanitizeConfig` (lengths in mm, 0.1 precision, cells stay at least 1mm). Tested.
+- `src/presets.ts`: European paper (ISO A), photo print and frame sizes in mm. Tested.
+- `src/preferences.ts`: Zustand store with `persist` (localStorage) for the grid settings. Hydrates after mount (`skipHydration`) to avoid a hydration mismatch. Tested.
+- `src/export.ts`: PNG export at a fixed 300 DPI, with a warning when the size is likely too big for the browser. Pure parts tested; the canvas drawing is not (jsdom has no canvas).
+- `src/frame-maker.tsx`: the UI (settings, preview grid, drag and drop, file input, batch drop, keyboard shortcuts, export button).
 
-Done:
-- Next.js 16 (App Router), React 19, strict TypeScript.
-- Base UI (`@base-ui/react`, the renamed `@base-ui-components/react`). The placeholder page uses its `Button`.
-- Static export (`output: "export"` in `next.config.ts`). The build produces plain files in `out/`.
-- oxlint with the typescript, unicorn, oxc, react and nextjs plugins (`.oxlintrc.json`).
-- Vitest with jsdom (`vitest.config.ts`).
-- `src/grid.ts`: pure `computeCells(config)` that turns rows, columns, spacing, padding and canvas size into cell rectangles. Tested in `src/grid.test.ts`.
-- `src/app/page.test.tsx`: smoke test for the placeholder page.
+Not persisted: the photos themselves (in-memory object URLs, lost on reload).
 
-Not done:
-- Photo list state, selection, undo/redo.
-- Grid UI, drag and drop, file input.
-- Image export.
-- `git init` (the directory is not a git repo yet).
+## Future improvements
+
+Export is the weakest part. Known gaps, roughly in priority order:
+
+1. **Canvas size limits.** DPI is fixed at 300. Browsers cap canvas size (Chrome 16384 px per side and about 268M px area, Safari and mobile much less), so very large sizes (a few metres at 300 DPI) fail. Today we only warn. Options: lower the DPI automatically to fit, let the user pick a DPI, or render in tiles and stitch them into a PNG/TIFF without one big canvas (for example with `OffscreenCanvas` in a worker and a streaming encoder).
+2. **DPI metadata.** `canvas.toBlob` PNGs carry no DPI. Print shops usually go by pixel size, but a `pHYs` chunk (or a JPEG/TIFF with density) would make the image open at its real size in editors.
+3. **Other formats.** JPEG (smaller files), PDF at the exact physical size, TIFF.
+4. **Print extras.** Bleed and crop marks, a background colour, and an optional border around each photo.
+5. **Photo persistence.** Keep photos across reloads in IndexedDB.
+6. **Per-photo crop.** Photos always fill their cell (cover). Allow choosing the focal point or fit-inside.
+7. **Test the canvas path.** Add a browser-based test (Playwright or Vitest browser mode).
 
 ## Commands
 
@@ -51,12 +56,4 @@ Not done:
 - **Next rewrites `tsconfig.json` on build.** It added `esModuleInterop`, `resolveJsonModule` and the `.next/dev/types` include. That's expected.
 - **`react/react-in-jsx-scope` is off** in `.oxlintrc.json` because React 19 uses the automatic JSX runtime.
 - **Rows and columns in `computeCells`** assume at least 1 each. There is no validation yet. Add it where the config enters from the UI.
-- **Not decided:** how to export. A canvas `toBlob` is the likely route. Print resolution and DPI need a decision, because large canvases hit browser size limits.
-
-## Suggested next steps
-
-1. Model photo state as a pure reducer: add, remove, move (single and multi), select, undo/redo. Test it before building any UI.
-2. Build the grid UI on top: config controls with Base UI, cells from `computeCells`, drag and drop.
-3. Add file input and batch drop.
-4. Add export, deciding on DPI and size limits.
-5. Run `git init` and make a first commit.
+- **Export is a single canvas at a fixed 300 DPI.** Decided for now; see Future improvements for the size-limit problem.

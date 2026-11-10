@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeCells, type GridConfig } from "./grid";
+import { computeCells, sanitizeConfig, type GridConfig } from "./grid";
 
 const base: GridConfig = {
   rows: 2,
@@ -30,5 +30,30 @@ describe("computeCells", () => {
     const [a, b, , d] = computeCells(base);
     expect(b!.x - (a!.x + a!.width)).toBeCloseTo(base.spacingX);
     expect(d!.y - (a!.y + a!.height)).toBeCloseTo(base.spacingY);
+  });
+});
+
+describe("sanitizeConfig", () => {
+  const valid = { rows: 2, columns: 3, spacingX: 10, spacingY: 10, padding: 20, width: 1000, height: 800 };
+
+  it("leaves valid config alone", () => {
+    expect(sanitizeConfig(valid)).toEqual(valid);
+  });
+
+  it("keeps 0.1mm precision", () => {
+    expect(sanitizeConfig({ ...valid, spacingX: 2.54, padding: 12.34 })).toMatchObject({ spacingX: 2.5, padding: 12.3 });
+  });
+
+  it("clamps rows, columns and negatives, and rejects NaN", () => {
+    const result = sanitizeConfig({ ...valid, rows: 0, columns: Number.NaN, spacingX: -5, padding: -1 });
+    expect(result).toMatchObject({ rows: 1, columns: 1, spacingX: 0, padding: 0 });
+  });
+
+  it("keeps every cell at least 1mm", () => {
+    const result = sanitizeConfig({ ...valid, padding: 5000, spacingX: 5000, spacingY: 5000, width: 297, height: 210 });
+    for (const cell of computeCells(result)) {
+      expect(cell.width).toBeGreaterThanOrEqual(1);
+      expect(cell.height).toBeGreaterThanOrEqual(1);
+    }
   });
 });
